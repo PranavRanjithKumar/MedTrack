@@ -15,3 +15,4 @@ organizations/peerOrganizations/*
 system-genesis-block/*
 *.tar.gz
 log.txt
+/config/*.swp

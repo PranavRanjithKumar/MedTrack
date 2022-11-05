@@ -126,7 +126,7 @@ function createOrgs() {
     . organizations/fabric-ca/registerEnroll.sh
 
     while :; do
-        if [ ! -f "organizations/fabric-ca/org1/tls-cert.pem" ]; then
+        if [ ! -f "organizations/fabric-ca/supplier/tls-cert.pem" ]; then
             sleep 1
         else
             break

@@ -164,3 +164,53 @@ function createOrgs() {
     infoln "Generating CCP files for all organizations"
     ./organizations/ccp-generate.sh
 }
+
+# Once you create the organization crypto material, you need to create the
+# genesis block of the application channel.
+
+# The configtxgen tool is used to create the genesis block. Configtxgen consumes a
+# "configtx.yaml" file that contains the definitions for the sample network. The
+# genesis block is defined using the "TwoOrgsApplicationGenesis" profile at the bottom
+# of the file. This profile defines an application channel consisting of our two Peer Orgs.
+# The peer and ordering organizations are defined in the "Profiles" section at the
+# top of the file. As part of each organization profile, the file points to the
+# location of the MSP directory for each member. This MSP is used to create the channel
+# MSP that defines the root of trust for each organization. In essence, the channel
+# MSP allows the nodes and users to be recognized as network members.
+#
+# If you receive the following warning, it can be safely ignored:
+#
+# [bccsp] GetDefault -> WARN 001 Before using BCCSP, please call InitFactories(). Falling back to bootBCCSP.
+#
+# You can ignore the logs regarding intermediate certs, we are not using them in
+# this crypto implementation.
+
+# After we create the org crypto material and the application channel genesis block,
+# we can now bring up the peers and ordering service. By default, the base
+# file for creating the network is "docker-compose-test-net.yaml" in the ``docker``
+# folder. This file defines the environment variables and file mounts that
+# point the crypto material and genesis block that were created in earlier.
+
+# Bring up the peer and orderer nodes using docker compose.
+
+function networkUp() {
+    checkPrereqs
+
+    # generate artifacts if they don't exist
+    if [ ! -d "organizations/peerOrganizations" ]; then
+        createOrgs
+    fi
+
+    COMPOSE_FILES="-f compose/${COMPOSE_FILE_BASE} -f compose/${CONTAINER_CLI}/${CONTAINER_CLI}-${COMPOSE_FILE_BASE}"
+
+    if [ "${DATABASE}" == "couchdb" ]; then
+        COMPOSE_FILES="${COMPOSE_FILES} -f compose/${COMPOSE_FILE_COUCH} -f compose/${CONTAINER_CLI}/${CONTAINER_CLI}-${COMPOSE_FILE_COUCH}"
+    fi
+
+    DOCKER_SOCK="${DOCKER_SOCK}" ${CONTAINER_CLI_COMPOSE} ${COMPOSE_FILES} up -d 2>&1
+
+    $CONTAINER_CLI ps -a
+    if [ $? -ne 0 ]; then
+        fatalln "Unable to start network"
+    fi
+}

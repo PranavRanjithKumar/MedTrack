@@ -1,0 +1,323 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: "3.7"
+
+volumes:
+  orderer.medtrack.com:
+  peer0.supplier.medtrack.com:
+  peer0.manufacturer.medtrack.com:
+  peer0.distributor.medtrack.com:
+  peer0.wholesaler.medtrack.com:
+  peer0.retailer.medtrack.com:
+  peer0.consumer.medtrack.com:
+
+networks:
+  medtrack:
+    name: fabric_medtrack
+
+services:
+  orderer.medtrack.com:
+    container_name: orderer.medtrack.com
+    image: hyperledger/fabric-orderer:latest
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=none
+      - ORDERER_CHANNELPARTICIPATION_ENABLED=true
+      - ORDERER_ADMIN_TLS_ENABLED=true
+      - ORDERER_ADMIN_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_ADMIN_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_ADMIN_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_TLS_CLIENTROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:7053
+      - ORDERER_OPERATIONS_LISTENADDRESS=orderer.medtrack.com:9443
+      - ORDERER_METRICS_PROVIDER=prometheus
+    working_dir: /root
+    command: orderer
+    volumes:
+      - ../organizations/ordererOrganizations/medtrack.com/orderers/orderer.medtrack.com/msp:/var/hyperledger/orderer/msp
+      - ../organizations/ordererOrganizations/medtrack.com/orderers/orderer.medtrack.com/tls/:/var/hyperledger/orderer/tls
+      - orderer.medtrack.com:/var/hyperledger/production/orderer
+    ports:
+      - 7050:7050
+      - 7053:7053
+      - 9443:9443
+    networks:
+      - medtrack
+
+  peer0.supplier.medtrack.com:
+    container_name: peer0.supplier.medtrack.com
+    image: hyperledger/fabric-peer:latest
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_CFG_PATH=/etc/hyperledger/peercfg
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variables
+      - CORE_PEER_ID=peer0.supplier.medtrack.com
+      - CORE_PEER_ADDRESS=peer0.supplier.medtrack.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.supplier.medtrack.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.supplier.medtrack.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.supplier.medtrack.com:7051
+      - CORE_PEER_LOCALMSPID=supplierMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.supplier.medtrack.com:9444
+      - CORE_METRICS_PROVIDER=prometheus
+      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0supplier"}
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+    volumes:
+      - ../organizations/peerOrganizations/supplier.medtrack.com/peers/peer0.supplier.medtrack.com:/etc/hyperledger/fabric
+      - peer0.supplier.medtrack.com:/var/hyperledger/production
+    working_dir: /root
+    command: peer node start
+    ports:
+      - 7051:7051
+      - 9444:9444
+    networks:
+      - medtrack
+
+  peer0.manufacturer.medtrack.com:
+    container_name: peer0.manufacturer.medtrack.com
+    image: hyperledger/fabric-peer:latest
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_CFG_PATH=/etc/hyperledger/peercfg
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variables
+      - CORE_PEER_ID=peer0.manufacturer.medtrack.com
+      - CORE_PEER_ADDRESS=peer0.manufacturer.medtrack.com:7071
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7071
+      - CORE_PEER_CHAINCODEADDRESS=peer0.manufacturer.medtrack.com:7072
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7072
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.manufacturer.medtrack.com:7071
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.manufacturer.medtrack.com:7071
+      - CORE_PEER_LOCALMSPID=manufacturerMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.manufacturer.medtrack.com:9445
+      - CORE_METRICS_PROVIDER=prometheus
+      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0manufacturer"}
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+    volumes:
+      - ../organizations/peerOrganizations/manufacturer.medtrack.com/peers/peer0.manufacturer.medtrack.com:/etc/hyperledger/fabric
+      - peer0.manufacturer.medtrack.com:/var/hyperledger/production
+    working_dir: /root
+    command: peer node start
+    ports:
+      - 7071:7071
+      - 9445:9445
+    networks:
+      - medtrack
+
+  peer0.distributor.medtrack.com:
+    container_name: peer0.distributor.medtrack.com
+    image: hyperledger/fabric-peer:latest
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_CFG_PATH=/etc/hyperledger/peercfg
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variables
+      - CORE_PEER_ID=peer0.distributor.medtrack.com
+      - CORE_PEER_ADDRESS=peer0.distributor.medtrack.com:7092
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7092
+      - CORE_PEER_CHAINCODEADDRESS=peer0.distributor.medtrack.com:7093
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7093
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.distributor.medtrack.com:7092
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.distributor.medtrack.com:7092
+      - CORE_PEER_LOCALMSPID=distributorMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.distributor.medtrack.com:9446
+      - CORE_METRICS_PROVIDER=prometheus
+      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0distributor"}
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+    volumes:
+      - ../organizations/peerOrganizations/distributor.medtrack.com/peers/peer0.distributor.medtrack.com:/etc/hyperledger/fabric
+      - peer0.distributor.medtrack.com:/var/hyperledger/production
+    working_dir: /root
+    command: peer node start
+    ports:
+      - 7092:7092
+      - 9446:9446
+    networks:
+      - medtrack
+
+ peer0.wholesaler.medtrack.com:
+    container_name: peer0.wholesaler.medtrack.com
+    image: hyperledger/fabric-peer:latest
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_CFG_PATH=/etc/hyperledger/peercfg
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variables
+      - CORE_PEER_ID=peer0.wholesaler.medtrack.com
+      - CORE_PEER_ADDRESS=peer0.wholesaler.medtrack.com:8021
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:8021
+      - CORE_PEER_CHAINCODEADDRESS=peer0.wholesaler.medtrack.com:8019
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:8019
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.wholesaler.medtrack.com:8021
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.wholesaler.medtrack.com:8021
+      - CORE_PEER_LOCALMSPID=wholesalerMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp      
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.wholesaler.medtrack.com:9447
+      - CORE_METRICS_PROVIDER=prometheus
+      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0wholesaler"}
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+    volumes:
+        - ../organizations/peerOrganizations/wholesaler.medtrack.com/peers/peer0.wholesaler.medtrack.com:/etc/hyperledger/fabric
+        - peer0.wholesaler.medtrack.com:/var/hyperledger/production
+    working_dir: /root
+    command: peer node start
+    ports:
+      - 8021:8021
+      - 9447:9447
+    networks:
+      - medtrack
+
+   peer0.retailer.medtrack.com:
+    container_name: peer0.retailer.medtrack.com
+    image: hyperledger/fabric-peer:latest
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_CFG_PATH=/etc/hyperledger/peercfg
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variables
+      - CORE_PEER_ID=peer0.retailer.medtrack.com
+      - CORE_PEER_ADDRESS=peer0.retailer.medtrack.com:8051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:8051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.retailer.medtrack.com:8052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:8052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.retailer.medtrack.com:8051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.retailer.medtrack.com:8051
+      - CORE_PEER_LOCALMSPID=retailerMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp      
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.retailer.medtrack.com:9448
+      - CORE_METRICS_PROVIDER=prometheus
+      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0retailer"}
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+    volumes:
+        - ../organizations/peerOrganizations/retailer.medtrack.com/peers/peer0.retailer.medtrack.com:/etc/hyperledger/fabric
+        - peer0.retailer.medtrack.com:/var/hyperledger/production
+    working_dir: /root
+    command: peer node start
+    ports:
+      - 8051:8051
+      - 9448:9448
+    networks:
+      - medtrack
+
+   peer0.consumer.medtrack.com:
+    container_name: peer0.consumer.medtrack.com
+    image: hyperledger/fabric-peer:latest
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_CFG_PATH=/etc/hyperledger/peercfg
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variables
+      - CORE_PEER_ID=peer0.consumer.medtrack.com
+      - CORE_PEER_ADDRESS=peer0.consumer.medtrack.com:8091
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:8091
+      - CORE_PEER_CHAINCODEADDRESS=peer0.consumer.medtrack.com:8093
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:8093
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.consumer.medtrack.com:8091
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.consumer.medtrack.com:8091
+      - CORE_PEER_LOCALMSPID=consumerMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp      
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.consumer.medtrack.com:9449
+      - CORE_METRICS_PROVIDER=prometheus
+      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0consumer"}
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+    volumes:
+        - ../organizations/peerOrganizations/consumer.medtrack.com/peers/peer0.consumer.medtrack.com:/etc/hyperledger/fabric
+        - peer0.consumer.medtrack.com:/var/hyperledger/production
+    working_dir: /root
+    command: peer node start
+    ports:
+      - 8091:8091
+      - 9449:9449
+    networks:
+      - medtrack
+
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools:latest
+    labels:
+      service: hyperledger-fabric
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - FABRIC_LOGGING_SPEC=INFO
+      - FABRIC_CFG_PATH=/etc/hyperledger/peercfg
+      #- FABRIC_LOGGING_SPEC=DEBUG
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - ../organizations:/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations
+      - ../scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+    depends_on:
+      - peer0.supplier.medtrack.com
+      - peer0.manufacturer.medtrack.com
+      - peer0.distributor.medtrack.com
+      - peer0.wholesaler.medtrack.com
+      - peer0.retailer.medtrack.com
+      - peer0.consumer.medtrack.com
+    networks:
+      - medtrack

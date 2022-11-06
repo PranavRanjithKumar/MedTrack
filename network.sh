@@ -214,3 +214,34 @@ function networkUp() {
         fatalln "Unable to start network"
     fi
 }
+
+# call the script to create the channel, join the peers of org1 and org2,
+# and then update the anchor peers for each organization
+function createChannel() {
+    # Bring up the network if it is not already up.
+    bringUpNetwork="false"
+
+    if ! $CONTAINER_CLI info >/dev/null 2>&1; then
+        fatalln "$CONTAINER_CLI network is required to be running to create a channel"
+    fi
+
+    # check if all containers are present
+    CONTAINERS=($($CONTAINER_CLI ps | grep hyperledger/ | awk '{print $2}'))
+    len=$(echo ${#CONTAINERS[@]})
+
+    if [[ $len -ge 4 ]] && [[ ! -d "organizations/peerOrganizations" ]]; then
+        echo "Bringing network down to sync certs with containers"
+        networkDown
+    fi
+
+    [[ $len -lt 4 ]] || [[ ! -d "organizations/peerOrganizations" ]] && bringUpNetwork="true" || echo "Network Running Already"
+
+    if [ $bringUpNetwork == "true" ]; then
+        infoln "Bringing up network"
+        networkUp
+    fi
+
+    # now run the script that creates a channel. This script uses configtxgen once
+    # to create the channel creation transaction and the anchor peer updates.
+    scripts/createChannel.sh $CHANNEL_NAME $CLI_DELAY $MAX_RETRY $VERBOSE
+}

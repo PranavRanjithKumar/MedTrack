@@ -178,7 +178,7 @@ services:
     networks:
       - medtrack
 
- peer0.wholesaler.medtrack.com:
+  peer0.wholesaler.medtrack.com:
     container_name: peer0.wholesaler.medtrack.com
     image: hyperledger/fabric-peer:latest
     labels:
@@ -201,14 +201,14 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.wholesaler.medtrack.com:8021
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.wholesaler.medtrack.com:8021
       - CORE_PEER_LOCALMSPID=wholesalerMSP
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp      
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
       - CORE_OPERATIONS_LISTENADDRESS=peer0.wholesaler.medtrack.com:9447
       - CORE_METRICS_PROVIDER=prometheus
       - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0wholesaler"}
       - CORE_CHAINCODE_EXECUTETIMEOUT=300s
     volumes:
-        - ../organizations/peerOrganizations/wholesaler.medtrack.com/peers/peer0.wholesaler.medtrack.com:/etc/hyperledger/fabric
-        - peer0.wholesaler.medtrack.com:/var/hyperledger/production
+      - ../organizations/peerOrganizations/wholesaler.medtrack.com/peers/peer0.wholesaler.medtrack.com:/etc/hyperledger/fabric
+      - peer0.wholesaler.medtrack.com:/var/hyperledger/production
     working_dir: /root
     command: peer node start
     ports:
@@ -217,7 +217,7 @@ services:
     networks:
       - medtrack
 
-   peer0.retailer.medtrack.com:
+  peer0.retailer.medtrack.com:
     container_name: peer0.retailer.medtrack.com
     image: hyperledger/fabric-peer:latest
     labels:
@@ -240,14 +240,14 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.retailer.medtrack.com:8051
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.retailer.medtrack.com:8051
       - CORE_PEER_LOCALMSPID=retailerMSP
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp      
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
       - CORE_OPERATIONS_LISTENADDRESS=peer0.retailer.medtrack.com:9448
       - CORE_METRICS_PROVIDER=prometheus
       - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0retailer"}
       - CORE_CHAINCODE_EXECUTETIMEOUT=300s
     volumes:
-        - ../organizations/peerOrganizations/retailer.medtrack.com/peers/peer0.retailer.medtrack.com:/etc/hyperledger/fabric
-        - peer0.retailer.medtrack.com:/var/hyperledger/production
+      - ../organizations/peerOrganizations/retailer.medtrack.com/peers/peer0.retailer.medtrack.com:/etc/hyperledger/fabric
+      - peer0.retailer.medtrack.com:/var/hyperledger/production
     working_dir: /root
     command: peer node start
     ports:
@@ -256,7 +256,7 @@ services:
     networks:
       - medtrack
 
-   peer0.consumer.medtrack.com:
+  peer0.consumer.medtrack.com:
     container_name: peer0.consumer.medtrack.com
     image: hyperledger/fabric-peer:latest
     labels:
@@ -279,14 +279,14 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.consumer.medtrack.com:8091
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.consumer.medtrack.com:8091
       - CORE_PEER_LOCALMSPID=consumerMSP
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp      
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
       - CORE_OPERATIONS_LISTENADDRESS=peer0.consumer.medtrack.com:9449
       - CORE_METRICS_PROVIDER=prometheus
       - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0consumer"}
       - CORE_CHAINCODE_EXECUTETIMEOUT=300s
     volumes:
-        - ../organizations/peerOrganizations/consumer.medtrack.com/peers/peer0.consumer.medtrack.com:/etc/hyperledger/fabric
-        - peer0.consumer.medtrack.com:/var/hyperledger/production
+      - ../organizations/peerOrganizations/consumer.medtrack.com/peers/peer0.consumer.medtrack.com:/etc/hyperledger/fabric
+      - peer0.consumer.medtrack.com:/var/hyperledger/production
     working_dir: /root
     command: peer node start
     ports:

@@ -215,7 +215,7 @@ function networkUp() {
     fi
 }
 
-# call the script to create the channel, join the peers of org1 and org2,
+# call the script to create the channel, join the peers of all organizations,
 # and then update the anchor peers for each organization
 function createChannel() {
     # Bring up the network if it is not already up.
@@ -244,4 +244,47 @@ function createChannel() {
     # now run the script that creates a channel. This script uses configtxgen once
     # to create the channel creation transaction and the anchor peer updates.
     scripts/createChannel.sh $CHANNEL_NAME $CLI_DELAY $MAX_RETRY $VERBOSE
+}
+
+# TODO: ADD FUNCTION FOR DEPLOYING chaincode
+
+# Tear down running network
+function networkDown() {
+
+    COMPOSE_BASE_FILES="-f compose/${COMPOSE_FILE_BASE} -f compose/${CONTAINER_CLI}/${CONTAINER_CLI}-${COMPOSE_FILE_BASE}"
+    COMPOSE_COUCH_FILES="-f compose/${COMPOSE_FILE_COUCH} -f compose/${CONTAINER_CLI}/${CONTAINER_CLI}-${COMPOSE_FILE_COUCH}"
+    COMPOSE_CA_FILES="-f compose/${COMPOSE_FILE_CA} -f compose/${CONTAINER_CLI}/${CONTAINER_CLI}-${COMPOSE_FILE_CA}"
+    COMPOSE_FILES="${COMPOSE_BASE_FILES} ${COMPOSE_COUCH_FILES} ${COMPOSE_CA_FILES}"
+
+    if [ "${CONTAINER_CLI}" == "docker" ]; then
+        DOCKER_SOCK=$DOCKER_SOCK ${CONTAINER_CLI_COMPOSE} ${COMPOSE_FILES} ${COMPOSE_ORG3_FILES} down --volumes --remove-orphans
+    elif [ "${CONTAINER_CLI}" == "podman" ]; then
+        ${CONTAINER_CLI_COMPOSE} ${COMPOSE_FILES} ${COMPOSE_ORG3_FILES} down --volumes
+    else
+        fatalln "Container CLI  ${CONTAINER_CLI} not supported"
+    fi
+
+    # Don't remove the generated artifacts -- note, the ledgers are always removed
+    if [ "$MODE" != "restart" ]; then
+        # Bring down the network, deleting the volumes
+        ${CONTAINER_CLI} volume rm docker_orderer.medtrack.com docker_peer0.supplier.medtrack.com docker_peer0.manufacturer.medtrack.com docker_peer0.distributor.medtrack.com docker_peer0.wholesaler.medtrack.com docker_peer0.retailer.medtrack.com docker_peer0.consumer.medtrack.com
+        #Cleanup the chaincode containers
+        clearContainers
+        #Cleanup images
+        removeUnwantedImages
+        #
+        ${CONTAINER_CLI} kill $(${CONTAINER_CLI} ps -q --filter name=ccaas) || true
+        # remove orderer block and other channel configuration transactions and certs
+        ${CONTAINER_CLI} run --rm -v "$(pwd):/data" busybox sh -c 'cd /data && rm -rf system-genesis-block/*.block organizations/peerOrganizations organizations/ordererOrganizations'
+        ## remove fabric ca artifacts
+        ${CONTAINER_CLI} run --rm -v "$(pwd):/data" busybox sh -c 'cd /data && rm -rf organizations/fabric-ca/supplier/msp organizations/fabric-ca/supplier/tls-cert.pem organizations/fabric-ca/supplier/ca-cert.pem organizations/fabric-ca/supplier/IssuerPublicKey organizations/fabric-ca/supplier/IssuerRevocationPublicKey organizations/fabric-ca/supplier/fabric-ca-server.db'
+        ${CONTAINER_CLI} run --rm -v "$(pwd):/data" busybox sh -c 'cd /data && rm -rf organizations/fabric-ca/manufacturer/msp organizations/fabric-ca/manufacturer/tls-cert.pem organizations/fabric-ca/manufacturer/ca-cert.pem organizations/fabric-ca/manufacturer/IssuerPublicKey organizations/fabric-ca/manufacturer/IssuerRevocationPublicKey organizations/fabric-ca/manufacturer/fabric-ca-server.db'
+        ${CONTAINER_CLI} run --rm -v "$(pwd):/data" busybox sh -c 'cd /data && rm -rf organizations/fabric-ca/distributor/msp organizations/fabric-ca/distributor/tls-cert.pem organizations/fabric-ca/distributor/ca-cert.pem organizations/fabric-ca/distributor/IssuerPublicKey organizations/fabric-ca/distributor/IssuerRevocationPublicKey organizations/fabric-ca/distributor/fabric-ca-server.db'
+        ${CONTAINER_CLI} run --rm -v "$(pwd):/data" busybox sh -c 'cd /data && rm -rf organizations/fabric-ca/wholesaler/msp organizations/fabric-ca/wholesaler/tls-cert.pem organizations/fabric-ca/wholesaler/ca-cert.pem organizations/fabric-ca/wholesaler/IssuerPublicKey organizations/fabric-ca/wholesaler/IssuerRevocationPublicKey organizations/fabric-ca/wholesaler/fabric-ca-server.db'
+        ${CONTAINER_CLI} run --rm -v "$(pwd):/data" busybox sh -c 'cd /data && rm -rf organizations/fabric-ca/retailer/msp organizations/fabric-ca/retailer/tls-cert.pem organizations/fabric-ca/retailer/ca-cert.pem organizations/fabric-ca/retailer/IssuerPublicKey organizations/fabric-ca/retailer/IssuerRevocationPublicKey organizations/fabric-ca/retailer/fabric-ca-server.db'
+        ${CONTAINER_CLI} run --rm -v "$(pwd):/data" busybox sh -c 'cd /data && rm -rf organizations/fabric-ca/consumer/msp organizations/fabric-ca/consumer/tls-cert.pem organizations/fabric-ca/consumer/ca-cert.pem organizations/fabric-ca/consumer/IssuerPublicKey organizations/fabric-ca/consumer/IssuerRevocationPublicKey organizations/fabric-ca/consumer/fabric-ca-server.db'
+        ${CONTAINER_CLI} run --rm -v "$(pwd):/data" busybox sh -c 'cd /data && rm -rf organizations/fabric-ca/ordererOrg/msp organizations/fabric-ca/ordererOrg/tls-cert.pem organizations/fabric-ca/ordererOrg/ca-cert.pem organizations/fabric-ca/ordererOrg/IssuerPublicKey organizations/fabric-ca/ordererOrg/IssuerRevocationPublicKey organizations/fabric-ca/ordererOrg/fabric-ca-server.db'
+        # remove channel and script artifacts
+        ${CONTAINER_CLI} run --rm -v "$(pwd):/data" busybox sh -c 'cd /data && rm -rf channel-artifacts log.txt *.tar.gz'
+    fi
 }

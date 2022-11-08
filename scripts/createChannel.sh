@@ -4,6 +4,8 @@
 . scripts/envVar.sh
 . scripts/utils.sh
 
+export FABRIC_CFG_PATH=${PWD}/configtx
+
 CHANNEL_NAME="$1"
 DELAY="$2"
 MAX_RETRY="$3"
@@ -53,7 +55,6 @@ createChannel() {
 
 # joinChannel ORG
 joinChannel() {
-    FABRIC_CFG_PATH=$PWD/config/
     ORG=$1
     setGlobals $ORG
     local rc=1

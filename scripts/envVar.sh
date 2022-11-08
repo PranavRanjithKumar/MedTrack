@@ -14,10 +14,10 @@ export CORE_PEER_TLS_ENABLED=true
 export ORDERER_CA=${PWD}/organizations/ordererOrganizations/medtrack.com/tlsca/tlsca.medtrack.com-cert.pem
 export PEER0_supplier_CA=${PWD}/organizations/peerOrganizations/supplier.medtrack.com/tlsca/tlsca.supplier.medtrack.com-cert.pem
 export PEER0_manufacturer_CA=${PWD}/organizations/peerOrganizations/manufacturer.medtrack.com/tlsca/tlsca.manufacturer.medtrack.com-cert.pem
-export PEER0_distributor_CA=${PWD}/organizations/peerOrganizations/manufacturer.medtrack.com/tlsca/tlsca.distributor.medtrack.com-cert.pem
-export PEER0_wholesaler_CA=${PWD}/organizations/peerOrganizations/manufacturer.medtrack.com/tlsca/tlsca.wholesaler.medtrack.com-cert.pem
-export PEER0_retailer_CA=${PWD}/organizations/peerOrganizations/manufacturer.medtrack.com/tlsca/tlsca.retailer.medtrack.com-cert.pem
-export PEER0_consumer_CA=${PWD}/organizations/peerOrganizations/manufacturer.medtrack.com/tlsca/tlsca.consumer.medtrack.com-cert.pem
+export PEER0_distributor_CA=${PWD}/organizations/peerOrganizations/distributor.medtrack.com/tlsca/tlsca.distributor.medtrack.com-cert.pem
+export PEER0_wholesaler_CA=${PWD}/organizations/peerOrganizations/wholesaler.medtrack.com/tlsca/tlsca.wholesaler.medtrack.com-cert.pem
+export PEER0_retailer_CA=${PWD}/organizations/peerOrganizations/retailer.medtrack.com/tlsca/tlsca.retailer.medtrack.com-cert.pem
+export PEER0_consumer_CA=${PWD}/organizations/peerOrganizations/consumer.medtrack.com/tlsca/tlsca.consumer.medtrack.com-cert.pem
 
 export ORDERER_ADMIN_TLS_SIGN_CERT=${PWD}/organizations/ordererOrganizations/medtrack.com/orderers/orderer.medtrack.com/tls/server.crt
 export ORDERER_ADMIN_TLS_PRIVATE_KEY=${PWD}/organizations/ordererOrganizations/medtrack.com/orderers/orderer.medtrack.com/tls/server.key

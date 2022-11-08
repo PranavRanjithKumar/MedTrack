@@ -357,7 +357,7 @@ fi
 
 # Determine mode of operation and printing out what we asked for
 if [ "$MODE" == "up" ]; then
-    infoln "Starting nodes with CLI timeout of '${MAX_RETRY}' tries and CLI delay of '${CLI_DELAY}' seconds and using database '${DATABASE} ${CRYPTO_MODE}"
+    infoln "Starting nodes with CLI timeout of '${MAX_RETRY}' tries and CLI delay of '${CLI_DELAY}' seconds and using database '${DATABASE}' ${CRYPTO_MODE}"
     infoln "Creating channel '${CHANNEL_NAME}'."
     createChannel
 elif [ "$MODE" == "down" ]; then

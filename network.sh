@@ -246,7 +246,14 @@ function createChannel() {
     scripts/createChannel.sh $CHANNEL_NAME $CLI_DELAY $MAX_RETRY $VERBOSE
 }
 
-# TODO: ADD FUNCTION FOR DEPLOYING chaincode
+## Call the script to deploy a chaincode to the channel
+function deployCC() {
+    scripts/deployCC.sh $CHANNEL_NAME $CC_NAME $CC_SRC_PATH $CC_SRC_LANGUAGE $CC_VERSION $CC_SEQUENCE $CC_INIT_FCN $CC_END_POLICY $CC_COLL_CONFIG $CLI_DELAY $MAX_RETRY $VERBOSE
+
+    if [ $? -ne 0 ]; then
+        fatalln "Deploying chaincode failed"
+    fi
+}
 
 # Tear down running network
 function networkDown() {
@@ -296,12 +303,12 @@ CRYPTO="Certificate Authorities"
 MAX_RETRY=5
 # default for delay between commands
 CLI_DELAY=3
-# channel name defaults to "mychannel"
+# channel name defaults to "plnchannel"
 CHANNEL_NAME="plnchannel"
-# chaincode name defaults to "NA"
-CC_NAME="NA"
-# chaincode path defaults to "NA"
-CC_SRC_PATH="NA"
+# chaincode name defaults to "medchain"
+CC_NAME="medchain"
+# chaincode path defaults to "./chaincode/medtrack/"
+CC_SRC_PATH="./chaincode/medtrack/"
 # endorsement policy defaults to "NA". This would allow chaincodes to use the majority default policy.
 CC_END_POLICY="NA"
 # collection configuration defaults to "NA"
@@ -315,8 +322,8 @@ COMPOSE_FILE_COUCH=compose-couch.yaml
 # certificate authorities compose file
 COMPOSE_FILE_CA=compose-ca.yaml
 #
-# chaincode language defaults to "NA"
-CC_SRC_LANGUAGE="NA"
+# chaincode language defaults to "typescript"
+CC_SRC_LANGUAGE="typescript"
 # default to running the docker commands for the CCAAS
 CCAAS_DOCKER_RUN=true
 # Chaincode version
@@ -367,6 +374,9 @@ elif [ "$MODE" == "restart" ]; then
     infoln "Restarting network"
     networkDown
     networkUp
+elif [ "$MODE" == "deployCC" ]; then
+    infoln "deploying chaincode on channel '${CHANNEL_NAME}'"
+    deployCC
 else
     printHelp
     exit 1

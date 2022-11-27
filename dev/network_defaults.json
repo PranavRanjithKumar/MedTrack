@@ -1,0 +1,86 @@
+{
+  "supplierOrg": {
+    "peer_ports": [
+      {
+        "peer0": 7051
+      }
+    ],
+    "cas": [
+      {
+        "port": 7054,
+        "admin_user": "admin",
+        "admin_password": "adminpw"
+      }
+    ]
+  },
+  "manufacturerOrg": {
+    "peer_ports": [
+      {
+        "peer0": 7071
+      }
+    ],
+    "cas": [
+      {
+        "port": 7073,
+        "admin_user": "admin",
+        "admin_password": "adminpw"
+      }
+    ]
+  },
+  "distributorOrg": {
+    "peer_ports": [
+      {
+        "peer0": 7092
+      }
+    ],
+    "cas": [
+      {
+        "port": 7096,
+        "admin_user": "admin",
+        "admin_password": "adminpw"
+      }
+    ]
+  },
+  "wholesalerOrg": {
+    "peer_ports": [
+      {
+        "peer0": 8021
+      }
+    ],
+    "cas": [
+      {
+        "port": 8023,
+        "admin_user": "admin",
+        "admin_password": "adminpw"
+      }
+    ]
+  },
+  "retailerOrg": {
+    "peer_ports": [
+      {
+        "peer0": 8051
+      }
+    ],
+    "cas": [
+      {
+        "port": 8054,
+        "admin_user": "admin",
+        "admin_password": "adminpw"
+      }
+    ]
+  },
+  "consumerOrg": {
+    "peer_ports": [
+      {
+        "peer0": 8091
+      }
+    ],
+    "cas": [
+      {
+        "port": 8096,
+        "admin_user": "admin",
+        "admin_password": "adminpw"
+      }
+    ]
+  }
+}

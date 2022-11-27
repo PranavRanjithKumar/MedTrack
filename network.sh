@@ -308,7 +308,7 @@ CHANNEL_NAME="plnchannel"
 # chaincode name defaults to "medchain"
 CC_NAME="medchain"
 # chaincode path defaults to "./chaincode/medtrack/"
-CC_SRC_PATH="./chaincode/medtrack/"
+CC_SRC_PATH="./chaincode/"
 # endorsement policy defaults to "NA". This would allow chaincodes to use the majority default policy.
 CC_END_POLICY="NA"
 # collection configuration defaults to "NA"

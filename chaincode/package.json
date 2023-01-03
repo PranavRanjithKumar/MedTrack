@@ -1,7 +1,7 @@
 {
-    "name": "pharmaceutical-supply-chain",
+    "name": "pharmaceutical-supply-chain-chaincode",
     "version": "1.0.0",
-    "description": "Asset Transfer Basic contract implemented in TypeScript",
+    "description": "Chaincode implementation in typescript",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
     "engines": {
@@ -17,9 +17,9 @@
         "build:watch": "tsc -w",
         "prepublishOnly": "npm run build"
     },
-    "engineStrict": true,
     "author": "Pranav",
-    "license": "Apache-2.0",
+    "engineStrict": true,
+    "license": "ISC",
     "dependencies": {
         "fabric-contract-api": "^2.4.0",
         "fabric-shim": "^2.4.0",

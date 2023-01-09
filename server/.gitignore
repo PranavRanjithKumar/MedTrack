@@ -79,4 +79,7 @@ typings/
 # Compiled TypeScript files
 dist
 
+# Hyperledger wallet IDs
+wallet
+
 .vscode

@@ -1,5 +1,6 @@
 import path from 'path';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 import { buildCCPOrg, buildWallet } from './utils/appUtils';
 import { buildCAClient, enrollAdmin } from './utils/CAUtils';
 
@@ -34,6 +35,10 @@ async function main() {
       console.log(error);
     }
   });
+
+  mongoose
+    .connect(process.env.DATABASE_LOCAL as string, { authSource: 'admin' })
+    .then(() => console.log('DB connection successful!'));
 
   app.listen(port, () => {
     console.log(`Server started on port ${port}`);

@@ -20,9 +20,7 @@ const organizationSchema = new Schema<IOrganization>({
     required: [true, 'Please provide an organization name.'],
     trim: true,
     validate: {
-      validator: function (val: string) {
-        return validator.isLength(val, { min: 3, max: 40 });
-      },
+      validator: (val: string) => validator.isLength(val, { min: 3, max: 40 }),
       message: 'Organization name should be of length from 3 to 40.',
     },
   },
@@ -32,9 +30,7 @@ const organizationSchema = new Schema<IOrganization>({
     unique: true,
     trim: true,
     validate: {
-      validator: function (val: string) {
-        return validator.isLength(val, { min: 3, max: 10 });
-      },
+      validator: (val: string) => validator.isLength(val, { min: 3, max: 10 }),
       message: 'Organization code should be of length from 3 to 10.',
     },
   },
@@ -45,9 +41,7 @@ const organizationSchema = new Schema<IOrganization>({
     lowercase: true,
     trim: true,
     validate: {
-      validator: function (val: string) {
-        return validator.isEmail(val);
-      },
+      validator: (val: string) => validator.isEmail(val),
       message: 'Please provide a valid organization email.',
     },
   },

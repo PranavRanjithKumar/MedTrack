@@ -17,6 +17,7 @@
     "fabric-ca-client": "^2.2.16",
     "fabric-network": "^2.2.16",
     "jsonwebtoken": "^9.0.0",
+    "mongodb": "^4.13.0",
     "mongoose": "^6.8.3",
     "morgan": "^1.10.0",
     "validator": "^13.7.0"

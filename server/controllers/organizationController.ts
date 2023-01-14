@@ -1,8 +1,9 @@
 import { RequestHandler } from 'express';
 import Organization, { IOrganization } from '../models/organizationModel';
+import catchAsync from '../utils/catchAsync';
 
-const createOrganization: RequestHandler = async (req, res, next) => {
-  try {
+const createOrganization: RequestHandler = catchAsync(
+  async (req, res, next) => {
     const org = req.body as IOrganization;
     const organization = await Organization.create({
       name: org.name,
@@ -18,14 +19,8 @@ const createOrganization: RequestHandler = async (req, res, next) => {
       message: 'Organization created successfully',
       organization,
     });
-  } catch (error) {
-    res.status(500).json({
-      status: 'fail',
-      message: 'Something went wrong',
-      error,
-    });
   }
-};
+);
 
 // eslint-disable-next-line import/prefer-default-export
 export { createOrganization };

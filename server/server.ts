@@ -9,6 +9,13 @@ dotenv.config({ path: './config.env' });
 // eslint-disable-next-line import/first
 import app from './app';
 
+process.on('uncaughtException', (err) => {
+  console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
+  console.log(err.name, err.message);
+  // eslint-disable-next-line no-process-exit
+  process.exit(1);
+});
+
 const port = process.env.PORT || 3000;
 
 async function main() {
@@ -40,9 +47,18 @@ async function main() {
     .connect(process.env.DATABASE_LOCAL as string, { authSource: 'admin' })
     .then(() => console.log('DB connection successful!'));
 
-  app.listen(port, () => {
+  const server = app.listen(port, () => {
     console.log(`Server started on port ${port}`);
     console.log(`Project directory ${__dirname}`);
+  });
+
+  process.on('unhandledRejection', (err: Error) => {
+    console.log('UNHANDLED REJECTION! 💥 Shutting down...');
+    console.log(err.name, err.message);
+    server.close(() => {
+      // eslint-disable-next-line no-process-exit
+      process.exit(1);
+    });
   });
 }
 

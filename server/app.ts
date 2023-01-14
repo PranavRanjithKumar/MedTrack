@@ -1,5 +1,6 @@
 import express from 'express';
 import morgan from 'morgan';
+import globalErrorHandler from './controllers/errorController';
 import organizationRoutes from './routes/organizationRoutes';
 
 const app = express();
@@ -11,5 +12,8 @@ if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 app.use(express.json({ limit: '10kb' }));
 
 app.use('/api/v1/organization', organizationRoutes);
+
+// Use global error handling middleware
+app.use(globalErrorHandler);
 
 export default app;

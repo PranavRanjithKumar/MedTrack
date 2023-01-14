@@ -63,14 +63,6 @@ const organizationSchema = new Schema<IOrganization>({
       'consumer'`,
     },
   },
-  role: {
-    type: String,
-    enum: {
-      values: ['admin', 'user'],
-      message: `Organization role should be either 'admin' or 'user'`,
-    },
-    default: 'user',
-  },
   address: {
     type: String,
     required: [true, 'Please provide organization address.'],

@@ -27,13 +27,13 @@ export default class Request {
     public status: RequestStatus;
 
     @Property()
-    public requestedItems: Composition;
+    public requestedItems: Composition[];
 
     @Property()
     public packageId: string | null;
 
     @Property()
-    public sentItems: sentItems[];
+    public sentItems: sentItems;
 
     @Property()
     public sentDate: string;

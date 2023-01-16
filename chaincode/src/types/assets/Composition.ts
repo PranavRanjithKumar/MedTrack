@@ -6,7 +6,7 @@ type Composition = {
 };
 
 export type sentItems = {
-    catalogueId: [Composition];
+    [catalogueId: string]: Composition[];
 };
 
 export default Composition;

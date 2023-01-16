@@ -4,12 +4,13 @@ import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
 
 const createUser: RequestHandler = catchAsync(async (req, res, next) => {
-  const { name, organization, email, role } = req.body as IUser;
+  const { name, organization, email, role, password } = req.body as IUser;
   const user = await User.create({
     name,
     organization,
     email,
     role,
+    password,
   });
   res.status(201).json({
     status: 'succcess',

@@ -12,8 +12,8 @@ if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' }));
 
-app.use('/api/v1/organization', organizationRoutes);
-app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/organizations/', organizationRoutes);
+app.use('/api/v1/users/', userRoutes);
 
 // Use global error handling middleware
 app.use(globalErrorHandler);

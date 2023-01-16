@@ -1,0 +1,61 @@
+[{
+  "_id": {
+    "$oid": "63c39735216bfd4acaa4c8fb"
+  },
+  "name": "Pranav",
+  "organization": {
+    "$oid": "63c2f2b6c7d36b37842e5fd9"
+  },
+  "email": "serum@admin.com",
+  "role": "admin",
+  "active": true,
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "63c397bd216bfd4acaa4c8ff"
+  },
+  "name": "Tameez",
+  "organization": {
+    "$oid": "63c395c4216bfd4acaa4c8f3"
+  },
+  "email": "admin1@aics.com",
+  "role": "admin",
+  "active": true,
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "63c3985d216bfd4acaa4c903"
+  },
+  "name": "Charan",
+  "organization": {
+    "$oid": "63c3960e216bfd4acaa4c8f5"
+  },
+  "email": "admin1@udu.com",
+  "role": "admin",
+  "active": true,
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "63c3988c216bfd4acaa4c905"
+  },
+  "name": "Siva",
+  "organization": {
+    "$oid": "63c396a8216bfd4acaa4c8f7"
+  },
+  "email": "admin1@ruu.com",
+  "role": "admin",
+  "active": true,
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "63c398b7216bfd4acaa4c907"
+  },
+  "name": "Praveen",
+  "organization": {
+    "$oid": "63c396e6216bfd4acaa4c8f9"
+  },
+  "email": "admin1@cwo.com",
+  "role": "admin",
+  "active": true,
+  "__v": 0
+}]

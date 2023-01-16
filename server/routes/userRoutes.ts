@@ -6,10 +6,12 @@ const router = Router();
 
 router.route('/login').post(authController.login);
 
+router.route('/:id').get(userController.getUser);
+
 router.use(authController.protect);
 
-router.route('/').post(userController.createUser);
-
-router.route('/:id').get(userController.getUser);
+router
+  .route('/')
+  .post(authController.restrictTo('admin'), userController.createUser);
 
 export default router;

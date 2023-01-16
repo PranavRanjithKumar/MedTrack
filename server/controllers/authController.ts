@@ -82,7 +82,6 @@ const protect: RequestHandler = catchAsync(async (req, res, next) => {
   let decodedToken = null;
   jwt.verify(token, process.env.JWT_SECRET as Secret, (err, decoded) => {
     if (err) return next(new AppError('Error in verifying your token', 401));
-    console.log(decoded);
     decodedToken = decoded;
   });
 
@@ -99,7 +98,6 @@ const protect: RequestHandler = catchAsync(async (req, res, next) => {
       )
     );
   }
-  console.log(currentUser._id);
 
   // // 4) Check if user changed password after the token was issued
   // if (currentUser.changedPasswordAfter(decoded.iat)) {
@@ -113,4 +111,16 @@ const protect: RequestHandler = catchAsync(async (req, res, next) => {
   next();
 });
 
-export { signToken, login, protect };
+const restrictTo: (roles: string) => RequestHandler =
+  (...roles) =>
+  (req, res, next) => {
+    // roles ['admin', 'manager', 'employee', 'user']. role='user'
+    if (req.user && req.user.role && !roles.includes(req.user.role)) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
+      );
+    }
+    next();
+  };
+
+export { signToken, login, protect, restrictTo };

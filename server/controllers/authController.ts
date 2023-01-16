@@ -111,7 +111,7 @@ const protect: RequestHandler = catchAsync(async (req, res, next) => {
   next();
 });
 
-const restrictTo: (roles: string) => RequestHandler =
+const restrictTo: (...roles: string[]) => RequestHandler =
   (...roles) =>
   (req, res, next) => {
     // roles ['admin', 'manager', 'employee', 'user']. role='user'

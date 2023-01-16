@@ -4,15 +4,21 @@ import catchAsync from '../utils/catchAsync';
 
 const createOrganization: RequestHandler = catchAsync(
   async (req, res, next) => {
-    const org = req.body as IOrganization;
+    const { name, code, email, address, city, state } =
+      req.body as IOrganization;
+    let type;
+    if (req.user && req.user.organization && 'type' in req.user.organization) {
+      ({ type } = req.user.organization);
+    }
+
     const organization = await Organization.create({
-      name: org.name,
-      code: org.code,
-      email: org.email,
-      type: org.type,
-      address: org.address,
-      city: org.city,
-      state: org.state,
+      name,
+      code,
+      email,
+      type,
+      address,
+      city,
+      state,
     });
     res.status(201).json({
       status: 'succcess',

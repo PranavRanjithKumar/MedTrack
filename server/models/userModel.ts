@@ -1,11 +1,12 @@
 /* eslint-disable object-shorthand */
-import { Schema, model, Types, Model } from 'mongoose';
+import { Schema, model, Model, Types, Document, PopulatedDoc } from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
+import { IOrganization } from './organizationModel';
 
 export interface IUser {
   name: string;
-  organization: Types.ObjectId;
+  organization: PopulatedDoc<Document<Types.ObjectId> & IOrganization>;
   email: string;
   role?: string;
   password?: string;

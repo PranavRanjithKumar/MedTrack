@@ -111,7 +111,24 @@ const protect: RequestHandler = catchAsync(async (req, res, next) => {
   next();
 });
 
-const restrictTo: (...roles: string[]) => RequestHandler =
+const restrictToOrgs: (...types: string[]) => RequestHandler =
+  (...types) =>
+  (req, res, next) => {
+    // types ['supplier', 'manufacturer', 'distributor', 'retailer', 'consumer']. type='manufacturer'
+    if (
+      req.user &&
+      req.user.organization &&
+      'type' in req.user.organization &&
+      !types.includes(req.user.organization.type as string)
+    ) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
+      );
+    }
+    next();
+  };
+
+const restrictToRoles: (...roles: string[]) => RequestHandler =
   (...roles) =>
   (req, res, next) => {
     // roles ['admin', 'manager', 'employee', 'user']. role='user'
@@ -123,4 +140,4 @@ const restrictTo: (...roles: string[]) => RequestHandler =
     next();
   };
 
-export { signToken, login, protect, restrictTo };
+export { signToken, login, protect, restrictToOrgs, restrictToRoles };

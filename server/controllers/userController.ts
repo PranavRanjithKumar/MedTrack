@@ -32,7 +32,7 @@ const getUser: RequestHandler<{ id: string }> = catchAsync(
     const userId = req.params.id;
     const user = await User.findById(userId);
 
-    if (!user) return new AppError('No user found with that ID', 400);
+    if (!user) return next(new AppError('No user found with that ID', 400));
 
     res.status(200).json({
       status: 'success',
@@ -49,7 +49,7 @@ const getAllUsers: RequestHandler<{ orgId: string }> = catchAsync(
     if (req.params.orgId) orgQuery = { organization: req.params.orgId };
     const user = await User.find(orgQuery);
 
-    if (!user) return new AppError('No users found!', 200);
+    if (!user) return next(new AppError('No users found!', 200));
 
     res.status(200).json({
       status: 'success',

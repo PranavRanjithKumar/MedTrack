@@ -10,14 +10,14 @@ router.use(authController.protect);
 
 router
   .route('/')
-  .get(authController.restrictTo('admin'), userController.getAllUsers)
+  .get(authController.restrictToRoles('admin'), userController.getAllUsers)
   .post(
-    authController.restrictTo('admin', 'manager'),
+    authController.restrictToRoles('admin', 'manager'),
     userController.createUser
   );
 
 router
   .route('/:id')
-  .get(authController.restrictTo('admin'), userController.getUser);
+  .get(authController.restrictToRoles('admin'), userController.getUser);
 
 export default router;

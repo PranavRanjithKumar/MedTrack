@@ -8,7 +8,7 @@ export interface IUser {
   name: string;
   organization: PopulatedDoc<Document<Types.ObjectId> & IOrganization>;
   email: string;
-  role?: string;
+  role: string;
   password?: string;
   passwordConfirm?: string;
   passwordChangedAt?: Date;

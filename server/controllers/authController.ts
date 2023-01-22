@@ -4,7 +4,9 @@ import jwt, { Secret } from 'jsonwebtoken';
 import { Types, Document } from 'mongoose';
 import User, { IUser, IUserMethods } from '../models/userModel';
 import AppError from '../utils/AppError';
+import { connectToGateway } from '../utils/appUtils';
 import catchAsync from '../utils/catchAsync';
+import { getUserWallet } from '../utils/CAUtils';
 
 interface JwtType {
   id: string;
@@ -140,4 +142,27 @@ const restrictToRoles: (...roles: string[]) => RequestHandler =
     next();
   };
 
-export { signToken, login, protect, restrictToOrgs, restrictToRoles };
+const connectToChannel: RequestHandler = catchAsync(async (req, res, next) => {
+  const userWallet = await getUserWallet(req.user?.email as string);
+
+  if (!userWallet)
+    return next(
+      new AppError('No id with this username exists in the wallet', 401)
+    );
+
+  const { gateway, network } = await connectToGateway(req);
+
+  req.gateway = gateway;
+  req.network = network;
+
+  next();
+});
+
+export {
+  signToken,
+  login,
+  protect,
+  restrictToOrgs,
+  restrictToRoles,
+  connectToChannel,
+};

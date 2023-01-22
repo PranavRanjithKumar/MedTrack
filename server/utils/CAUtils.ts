@@ -1,7 +1,8 @@
+import { Request } from 'express';
 import FabricCAServices, { IKeyValueAttribute } from 'fabric-ca-client';
 import { Wallet } from 'fabric-network';
-import { IUser } from '../models/userModel';
 import AppError from './AppError';
+import { buildCCPOrg, buildWallet, getMSPId } from './appUtils';
 
 const buildCAClient = (
   ccp: Record<string, any>,
@@ -23,11 +24,12 @@ const buildCAClient = (
 const enrollAdmin = async (
   caClient: FabricCAServices,
   wallet: Wallet,
-  orgMspId: string
+  orgMspId: string,
+  adminUserMail: string | undefined
 ): Promise<void> => {
   try {
     // Check to see if we've already enrolled the admin user.
-    const identity = await wallet.get(process.env.FABRIC_CA_ADMIN as string);
+    const identity = await wallet.get(adminUserMail as string);
     if (identity) {
       console.log(
         'An identity for the admin user already exists in the wallet'
@@ -37,7 +39,7 @@ const enrollAdmin = async (
 
     // Enroll the admin user, and import the new identity into the wallet.
     const enrollment = await caClient.enroll({
-      enrollmentID: process.env.FABRIC_CA_ADMIN as string,
+      enrollmentID: adminUserMail as string,
       enrollmentSecret: process.env.FABRIC_CA_ADMIN_PASS as string,
     });
     const x509Identity = {
@@ -48,7 +50,7 @@ const enrollAdmin = async (
       mspId: orgMspId,
       type: 'X.509',
     };
-    await wallet.put(process.env.FABRIC_CA_ADMIN as string, x509Identity);
+    await wallet.put(adminUserMail as string, x509Identity);
     console.log(
       'Successfully enrolled admin user and imported it into the wallet'
     );
@@ -59,16 +61,18 @@ const enrollAdmin = async (
 
 const registerAndEnrollUser = async (
   caClient: FabricCAServices,
-  wallet: Wallet,
   orgMspId: string,
-  role: string,
   adminUserId: string,
+  newUserId: string,
+  role: string,
   userAttributes: IKeyValueAttribute[],
-  newUser: IUser,
   affiliation: string
 ): Promise<void> => {
+  // setup the wallet to hold the credentials of the application user
+  const wallet = await buildWallet();
+
   // Check to see if we've already enrolled the user
-  const userIdentity = await wallet.get(newUser.email);
+  const userIdentity = await wallet.get(newUserId);
   if (userIdentity) {
     throw new AppError('An identity with this userId already exists!', 400);
   }
@@ -91,14 +95,14 @@ const registerAndEnrollUser = async (
   const secret = await caClient.register(
     {
       affiliation,
-      enrollmentID: newUser.email,
+      enrollmentID: newUserId,
       attrs: userAttributes,
       role,
     },
     adminUser
   );
   const enrollment = await caClient.enroll({
-    enrollmentID: newUser.email,
+    enrollmentID: newUserId,
     enrollmentSecret: secret,
   });
   const x509Identity = {
@@ -109,7 +113,66 @@ const registerAndEnrollUser = async (
     mspId: orgMspId,
     type: 'X.509',
   };
-  await wallet.put(newUser.email, x509Identity);
+  await wallet.put(newUserId, x509Identity);
 };
 
-export { buildCAClient, enrollAdmin, registerAndEnrollUser };
+const createUserIdentity = async (
+  email: string,
+  type: string,
+  role: string,
+  req: Request
+) => {
+  const org = type;
+
+  const mspOrg = getMSPId(org);
+
+  // build an in memory object with the network configuration (also known as a connection profile)
+  const ccp = await buildCCPOrg(org);
+
+  // build an instance of the fabric ca services client based on
+  // the information in the network configuration
+  const caClient = buildCAClient(ccp, `ca.${org}.${process.env.DOMAIN}`);
+
+  const attrs: IKeyValueAttribute[] = [
+    {
+      name: 'email',
+      value: email,
+      ecert: true,
+    },
+    {
+      name: 'role',
+      value: role,
+      ecert: true,
+    },
+  ];
+
+  const netRole = role === 'admin' ? role : 'client';
+
+  const adminUserId = req.user?.email as string;
+
+  await registerAndEnrollUser(
+    caClient,
+    mspOrg,
+    adminUserId,
+    email,
+    netRole,
+    attrs,
+    type
+  );
+};
+
+const getUserWallet = async (userId: string) => {
+  const wallet = await buildWallet();
+
+  const userWallet = await wallet.get(userId);
+
+  return userWallet;
+};
+
+export {
+  buildCAClient,
+  enrollAdmin,
+  registerAndEnrollUser,
+  createUserIdentity,
+  getUserWallet,
+};

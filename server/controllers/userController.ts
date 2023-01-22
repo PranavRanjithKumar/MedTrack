@@ -1,7 +1,9 @@
 import { RequestHandler } from 'express';
+import { IOrganization } from '../models/organizationModel';
 import User, { IUser } from '../models/userModel';
 import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
+import { createUserIdentity } from '../utils/CAUtils';
 
 const createUser: RequestHandler = catchAsync(async (req, res, next) => {
   let organization;
@@ -20,6 +22,15 @@ const createUser: RequestHandler = catchAsync(async (req, res, next) => {
     role,
     password,
   });
+
+  if (user)
+    await createUserIdentity(
+      user.email,
+      (user.organization as IOrganization).type,
+      role,
+      req
+    );
+
   res.status(201).json({
     status: 'succcess',
     message: 'User created successfully',

@@ -1,7 +1,6 @@
-import path from 'path';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import { buildCCPOrg, buildWallet } from './utils/appUtils';
+import { buildCCPOrg, buildWallet, getMSPId } from './utils/appUtils';
 import { buildCAClient, enrollAdmin } from './utils/CAUtils';
 
 dotenv.config({ path: './config.env' });
@@ -24,20 +23,21 @@ async function main() {
   // register admins of all organizations
   (organizations as string[]).forEach(async (org) => {
     try {
-      const walletPath = path.join(__dirname, '..', 'wallet', `${org}`);
-      const mspOrg = `${org[0].toUpperCase()}${org.substring(1)}MSP`;
+      const mspOrg = getMSPId(org);
+
+      const adminUserMail = process.env[`${org.toUpperCase()}_ADMIN`];
 
       // build an in memory object with the network configuration (also known as a connection profile)
-      const ccp = buildCCPOrg(org);
+      const ccp = await buildCCPOrg(org);
 
       // build an instance of the fabric ca services client based on
       // the information in the network configuration
       const caClient = buildCAClient(ccp, `ca.${org}.${process.env.DOMAIN}`);
 
       // setup the wallet to hold the credentials of the application user
-      const wallet = await buildWallet(walletPath);
+      const wallet = await buildWallet();
 
-      await enrollAdmin(caClient, wallet, mspOrg);
+      await enrollAdmin(caClient, wallet, mspOrg, adminUserMail);
     } catch (error) {
       console.log(error);
     }

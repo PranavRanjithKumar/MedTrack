@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
-import AppError from './AppError';
 
 type CatchAyncFn = (
   arg0: (req: Request, res: Response, next: NextFunction) => Promise<any>

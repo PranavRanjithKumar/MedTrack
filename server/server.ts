@@ -20,6 +20,9 @@ const port = process.env.PORT || 3000;
 async function main() {
   const organizations = process.env.ORGANIZATIONS?.split(',');
 
+  // setup the wallet to hold the credentials of the application user
+  const wallet = await buildWallet();
+
   // register admins of all organizations
   (organizations as string[]).forEach(async (org) => {
     try {
@@ -28,14 +31,11 @@ async function main() {
       const adminUserMail = process.env[`${org.toUpperCase()}_ADMIN`];
 
       // build an in memory object with the network configuration (also known as a connection profile)
-      const ccp = await buildCCPOrg(org);
+      const ccp = buildCCPOrg(org);
 
       // build an instance of the fabric ca services client based on
       // the information in the network configuration
       const caClient = buildCAClient(ccp, `ca.${org}.${process.env.DOMAIN}`);
-
-      // setup the wallet to hold the credentials of the application user
-      const wallet = await buildWallet();
 
       await enrollAdmin(caClient, wallet, mspOrg, adminUserMail);
     } catch (error) {

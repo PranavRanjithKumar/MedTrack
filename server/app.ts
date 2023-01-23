@@ -5,6 +5,7 @@ import organizationRoutes from './routes/organizationRoutes';
 import userRoutes from './routes/userRoutes';
 import requestRoutes from './routes/requestRoutes';
 import drugRoutes from './routes/drugRoutes';
+import assetRoutes from './routes/assetRoutes';
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use('/api/v1/organizations/', organizationRoutes);
 app.use('/api/v1/users/', userRoutes);
 app.use('/api/v1/requests/', requestRoutes);
 app.use('/api/v1/drugs/', drugRoutes);
+app.use('/api/v1/assets/', assetRoutes);
 
 // Use global error handling middleware
 app.use(globalErrorHandler);

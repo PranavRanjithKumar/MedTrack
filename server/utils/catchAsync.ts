@@ -5,7 +5,11 @@ type CatchAyncFn = (
 ) => RequestHandler;
 
 const catchAsync: CatchAyncFn = (fn) => (req, res, next) => {
-  fn(req, res, next).catch(next);
+  fn(req, res, next)
+    .catch(next)
+    .finally(() => {
+      if (req.gateway) req.gateway.disconnect();
+    });
 };
 
 export default catchAsync;

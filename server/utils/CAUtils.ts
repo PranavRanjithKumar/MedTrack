@@ -36,6 +36,7 @@ const enrollAdmin = async (
       );
       return;
     }
+    console.log('Trying to enroll the admin user!');
 
     // Enroll the admin user, and import the new identity into the wallet.
     const enrollment = await caClient.enroll({

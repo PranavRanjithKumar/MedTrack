@@ -4,10 +4,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import AppError from './AppError';
 
-const getMSPId = (org: string) =>
-  `${org[0].toUpperCase()}${org.substring(1)}MSP`;
+const getMSPId = (org: string) => `${org}MSP`;
 
-const buildCCPOrg = async (org: string): Promise<Record<string, unknown>> => {
+const buildCCPOrg = (org: string): Record<string, any> => {
   // load the common connection configuration file
   const ccpPath = path.resolve(
     __dirname,
@@ -23,16 +22,13 @@ const buildCCPOrg = async (org: string): Promise<Record<string, unknown>> => {
   if (!fileExists) {
     throw new Error(`no such file or directory: ${ccpPath}`);
   }
-  let contents = '';
-  fs.readFile(ccpPath, 'utf8', (err, data) => {
-    if (err) throw new AppError(`no such file or directory: ${ccpPath}`, 500);
-    contents = data;
-  });
+  const contents = fs.readFileSync(ccpPath, 'utf8');
 
   // build a JSON object from the file contents
   const ccp = JSON.parse(contents);
 
   console.log(`Loaded the network configuration located at ${ccpPath}`);
+
   return ccp;
 };
 

@@ -10,18 +10,18 @@ const createUser: RequestHandler = catchAsync(async (req, res, next) => {
   const { name, email, role, password } = req.body as IUser;
   if (req.user?.role === 'manager') {
     ({ organization } = req.user);
-    if (role === 'admin')
-      return next(new AppError('Cannot create user with Admin role', 403));
   } else {
     ({ organization } = req.body as IUser);
   }
-  const user = await User.create({
-    name,
-    organization,
-    email,
-    role,
-    password,
-  });
+  const user = await (
+    await User.create({
+      name,
+      organization,
+      email,
+      role,
+      password,
+    })
+  ).populate('organization');
 
   if (user)
     await createUserIdentity(

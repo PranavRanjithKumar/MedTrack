@@ -6,6 +6,6 @@ const router = Router();
 
 router.use(authController.protect, authController.connectToChannel);
 
-router.route('/').get(assetStoreController.readAsset);
+router.route('/:id').get(assetStoreController.readAsset);
 
 export default router;

@@ -62,15 +62,16 @@ const enrollAdmin = async (
 
 const registerAndEnrollUser = async (
   caClient: FabricCAServices,
-  orgMspId: string,
+  org: string,
   adminUserId: string,
   newUserId: string,
   role: string,
   userAttributes: IKeyValueAttribute[],
   affiliation: string
 ): Promise<void> => {
+  const orgMspId = getMSPId(org);
   // setup the wallet to hold the credentials of the application user
-  const wallet = await buildWallet();
+  const wallet = await buildWallet(org);
 
   // Check to see if we've already enrolled the user
   const userIdentity = await wallet.get(newUserId);
@@ -91,11 +92,13 @@ const registerAndEnrollUser = async (
   const provider = wallet.getProviderRegistry().getProvider(adminIdentity.type);
   const adminUser = await provider.getUserContext(adminIdentity, adminUserId);
 
+  console.log(`The admin user is affiliated to: ${adminUser.getAffiliation()}`);
+
   // Register the user, enroll the user, and import the new identity into the wallet.
   // if affiliation is specified by client, the affiliation value must be configured in CA
   const secret = await caClient.register(
     {
-      affiliation,
+      affiliation: 'org1.department1',
       enrollmentID: newUserId,
       attrs: userAttributes,
       role,
@@ -125,10 +128,8 @@ const createUserIdentity = async (
 ) => {
   const org = type;
 
-  const mspOrg = getMSPId(org);
-
   // build an in memory object with the network configuration (also known as a connection profile)
-  const ccp = await buildCCPOrg(org);
+  const ccp = buildCCPOrg(org);
 
   // build an instance of the fabric ca services client based on
   // the information in the network configuration
@@ -149,11 +150,11 @@ const createUserIdentity = async (
 
   const netRole = role === 'admin' ? role : 'client';
 
-  const adminUserId = req.user?.email as string;
+  const adminUserId = 'admin';
 
   await registerAndEnrollUser(
     caClient,
-    mspOrg,
+    org,
     adminUserId,
     email,
     netRole,
@@ -162,8 +163,8 @@ const createUserIdentity = async (
   );
 };
 
-const getUserWallet = async (userId: string) => {
-  const wallet = await buildWallet();
+const getUserWallet = async (userId: string, orgType: string) => {
+  const wallet = await buildWallet(orgType);
 
   const userWallet = await wallet.get(userId);
 

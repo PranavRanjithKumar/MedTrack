@@ -143,7 +143,19 @@ const restrictToRoles: (...roles: string[]) => RequestHandler =
   };
 
 const connectToChannel: RequestHandler = catchAsync(async (req, res, next) => {
-  const userWallet = await getUserWallet(req.user?.email as string);
+  let orgType;
+  let id;
+  if (req.user && req.user.organization && 'type' in req.user.organization) {
+    orgType = req.user.organization.type;
+  }
+
+  if (req.user && req.user.role === 'admin') {
+    id = 'admin';
+  } else {
+    id = req.user?.email as string;
+  }
+
+  const userWallet = await getUserWallet(id, orgType as string);
 
   if (!userWallet)
     return next(

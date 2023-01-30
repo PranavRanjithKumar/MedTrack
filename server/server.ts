@@ -18,30 +18,38 @@ process.on('uncaughtException', (err) => {
 const port = process.env.PORT || 3000;
 
 async function main() {
-  const organizations = process.env.ORGANIZATIONS?.split(',');
+  const organizations = process.env.ORGANIZATIONS?.split(',') as string[];
 
   // setup the wallet to hold the credentials of the application user
-  const wallet = await buildWallet();
 
   // register admins of all organizations
-  (organizations as string[]).forEach(async (org) => {
-    try {
-      const mspOrg = getMSPId(org);
 
-      const adminUserMail = process.env[`${org.toUpperCase()}_ADMIN`];
+  for (let i = 0; i < organizations.length; i += 1) {
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const wallet = await buildWallet(organizations[i]);
+
+      const mspOrg = getMSPId(organizations[i]);
+
+      const adminUserMail =
+        process.env[`${organizations[i].toUpperCase()}_ADMIN`];
 
       // build an in memory object with the network configuration (also known as a connection profile)
-      const ccp = buildCCPOrg(org);
+      const ccp = buildCCPOrg(organizations[i]);
 
       // build an instance of the fabric ca services client based on
       // the information in the network configuration
-      const caClient = buildCAClient(ccp, `ca.${org}.${process.env.DOMAIN}`);
+      const caClient = buildCAClient(
+        ccp,
+        `ca.${organizations[i]}.${process.env.DOMAIN}`
+      );
 
+      // eslint-disable-next-line no-await-in-loop
       await enrollAdmin(caClient, wallet, mspOrg, adminUserMail);
     } catch (error) {
       console.log(error);
     }
-  });
+  }
 
   mongoose
     .connect(process.env.DATABASE_LOCAL as string, { authSource: 'admin' })

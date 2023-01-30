@@ -32,15 +32,15 @@ const buildCCPOrg = (org: string): Record<string, any> => {
   return ccp;
 };
 
-const buildWalletPath = () => {
-  const walletPath = path.join(__dirname, '..', '..', 'wallet');
+const buildWalletPath = (org: string) => {
+  const walletPath = path.join(__dirname, '..', '..', 'wallet', org);
   return walletPath;
 };
 
-const buildWallet = async (): Promise<Wallet> => {
+const buildWallet = async (org: string): Promise<Wallet> => {
   // Create a new  wallet : Note that wallet is for managing identities.
   let wallet: Wallet;
-  const walletPath = buildWalletPath();
+  const walletPath = buildWalletPath(org);
   if (walletPath) {
     wallet = await Wallets.newFileSystemWallet(walletPath);
     console.log(`Built a file system wallet at ${walletPath}`);
@@ -55,12 +55,18 @@ const buildWallet = async (): Promise<Wallet> => {
 const connectToGateway = async (req: Request) => {
   const gateway = new Gateway();
 
-  const wallet = await buildWallet();
-
   let ccp;
   let userId;
+  let orgType;
 
-  if (req.user) userId = req.user.email;
+  if (req.user && req.user.organization && 'type' in req.user.organization) {
+    orgType = req.user.organization.type;
+  }
+
+  const wallet = await buildWallet(orgType as string);
+
+  if (req.user && req.user.role === 'admin') userId = 'admin';
+  else userId = req.user?.email;
 
   // using asLocalhost as this gateway is using a fabric network deployed locally };
   const gatewayOpts: GatewayOptions = {
@@ -70,13 +76,15 @@ const connectToGateway = async (req: Request) => {
   };
 
   if (req.user && req.user.organization && 'type' in req.user.organization) {
-    ccp = await buildCCPOrg(req.user.organization.type);
+    ccp = buildCCPOrg(req.user.organization.type);
   }
 
   // setup the gateway instance
   // The user will now be able to create connections to the fabric network and be able to
   // submit transactions and query. All transactions submitted by this gateway will be
   // signed by this user using the credentials stored in the wallet.
+
+  console.log(gateway);
 
   try {
     await gateway.connect(ccp as Record<string, unknown>, gatewayOpts);
@@ -85,6 +93,7 @@ const connectToGateway = async (req: Request) => {
 
     return { gateway, network };
   } catch (e) {
+    console.log(e);
     throw new AppError(`Couldn't connect to the network!`, 500);
   }
 };

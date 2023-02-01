@@ -47,5 +47,5 @@ export default class Drug {
     public manufacturingOrgLocation: location;
 
     @Property()
-    public constitution: Composition[];
+    public constitution: Composition;
 }

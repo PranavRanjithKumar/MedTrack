@@ -33,13 +33,13 @@ export default class Request {
     public status: RequestStatus;
 
     @Property()
-    public requestedItems: requestedItem[];
+    public requestedItems: requestedItem;
 
     @Property()
     public packageId?: string;
 
     @Property()
-    public sentItems?: sentItem[];
+    public sentItems?: sentItem;
 
     @Property()
     public sentDate?: string;

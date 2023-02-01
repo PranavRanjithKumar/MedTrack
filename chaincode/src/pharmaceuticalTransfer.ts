@@ -107,7 +107,7 @@ export class PharmaceuticalTransfer extends Contract {
 
         // Get the Request
         const request = JSON.parse(assetString) as Request;
-        const sentItemsForReq = JSON.parse(sentItems) as sentItem[];
+        const sentItemsForReq = JSON.parse(sentItems) as sentItem;
 
         //check if the organization can make the transfer
         // TODO: Comment it later
@@ -141,29 +141,28 @@ export class PharmaceuticalTransfer extends Contract {
         }
 
         // Fetch the catalogue id of sent items
-        let transformedAssets: (RawMaterial | Drug)[];
+        let transformedAssets: (RawMaterial | Drug)[] = [];
         let sentItemsCatalogueIds: Set<string> = new Set();
         for (const drugId of drugIds) {
             const assetString = await this.ReadAsset(ctx, drugId);
             const rawMaterialOrDrug = JSON.parse(assetString) as
                 | RawMaterial
                 | Drug;
+            let updatingAsset = { ...rawMaterialOrDrug };
             if (
-                (rawMaterialOrDrug instanceof RawMaterial &&
+                (updatingAsset.docType === "raw-material" &&
                     request.requestingOrgType === "manufacturer") ||
-                (rawMaterialOrDrug instanceof Drug &&
+                (updatingAsset.docType === "drug" &&
                     (request.requestingOrgType === "distributor" ||
                         request.requestingOrgType === "retailer"))
             ) {
-                rawMaterialOrDrug.currentOwnerOrgType =
-                    request.requestingOrgType;
+                updatingAsset.currentOwnerOrgType = request.requestingOrgType;
             }
-            rawMaterialOrDrug.currentOwnerOrgId = request.requestingOrgId;
-            rawMaterialOrDrug.currentOwnerLocation =
-                request.requestedFromLocation;
+            updatingAsset.currentOwnerOrgId = request.requestingOrgId;
+            updatingAsset.currentOwnerLocation = request.requestedFromLocation;
 
-            transformedAssets.push(rawMaterialOrDrug);
-            sentItemsCatalogueIds.add(rawMaterialOrDrug.catalogueId);
+            transformedAssets.push(updatingAsset);
+            sentItemsCatalogueIds.add(updatingAsset.catalogueId);
         }
 
         // Check if the requested and sent items are the same

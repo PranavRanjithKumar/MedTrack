@@ -1,6 +1,6 @@
 import { Object, Property } from "fabric-contract-api";
 import location from "../Location";
-import Composition from "./Composition";
+import { Composition } from "./Composition";
 
 @Object()
 export default class Drug {

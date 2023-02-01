@@ -1,7 +1,7 @@
 import { Object, Property } from "fabric-contract-api";
 import RequestStatus from "../enums/status";
 import location from "../Location";
-import requestedItem, { sentItem } from "./Composition";
+import { requestedItem, sentItem } from "./Composition";
 
 @Object()
 export default class Request {
@@ -15,7 +15,13 @@ export default class Request {
     public requestingOrgId: string;
 
     @Property()
+    public requestingOrgType: string;
+
+    @Property()
     public transferringOrgId: string;
+
+    @Property()
+    public transferringOrgType: string;
 
     @Property()
     public requestedDate: string;

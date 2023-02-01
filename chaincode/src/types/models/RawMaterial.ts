@@ -10,10 +10,10 @@ export default class RawMaterial {
     public docType: "raw-material";
 
     @Property()
-    public name: "string";
+    public name: string;
 
     @Property()
-    public description: "string";
+    public description: string;
 
     @Property()
     public catalogueId: string;

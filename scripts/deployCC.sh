@@ -8,7 +8,7 @@ CC_SRC_PATH=${3}
 CC_SRC_LANGUAGE=${4}
 CC_VERSION=${5}
 CC_SEQUENCE=${6}
-CC_INIT_FCN="InitLedger"
+CC_INIT_FCN="NA"
 CC_END_POLICY=${8}
 CC_COLL_CONFIG=${9}
 DELAY=${10}
@@ -69,7 +69,7 @@ else
     exit 1
 fi
 
-INIT_REQUIRED="--init-required"
+INIT_REQUIRED=""
 
 if [ "$CC_END_POLICY" = "NA" ]; then
     CC_END_POLICY=""

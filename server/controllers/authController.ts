@@ -147,15 +147,10 @@ const connectToChannel: RequestHandler = catchAsync(async (req, res, next) => {
   let id;
   if (req.user && req.user.organization && 'type' in req.user.organization) {
     orgType = req.user.organization.type;
+    id = req.user.email;
   }
 
-  if (req.user && req.user.role === 'admin') {
-    id = 'admin';
-  } else {
-    id = req.user?.email as string;
-  }
-
-  const userWallet = await getUserWallet(id, orgType as string);
+  const userWallet = await getUserWallet(id as string, orgType as string);
 
   if (!userWallet)
     return next(

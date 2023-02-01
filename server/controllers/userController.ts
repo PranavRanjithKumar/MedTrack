@@ -6,13 +6,8 @@ import catchAsync from '../utils/catchAsync';
 import { createUserIdentity } from '../utils/CAUtils';
 
 const createUser: RequestHandler = catchAsync(async (req, res, next) => {
-  let organization;
-  const { name, email, role, password } = req.body as IUser;
-  if (req.user?.role === 'manager') {
-    ({ organization } = req.user);
-  } else {
-    ({ organization } = req.body as IUser);
-  }
+  const { name, email, role, password, organization } = req.body as IUser;
+
   const user = await (
     await User.create({
       name,
@@ -28,7 +23,8 @@ const createUser: RequestHandler = catchAsync(async (req, res, next) => {
       user.email,
       (user.organization as IOrganization).type,
       role,
-      req
+      user.organization?.id as string,
+      req.user?.email as string
     );
 
   res.status(201).json({

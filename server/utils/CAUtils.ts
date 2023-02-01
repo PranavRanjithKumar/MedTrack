@@ -66,8 +66,7 @@ const registerAndEnrollUser = async (
   adminUserId: string,
   newUserId: string,
   role: string,
-  userAttributes: IKeyValueAttribute[],
-  affiliation: string
+  userAttributes: IKeyValueAttribute[]
 ): Promise<void> => {
   const orgMspId = getMSPId(org);
   // setup the wallet to hold the credentials of the application user
@@ -98,7 +97,7 @@ const registerAndEnrollUser = async (
   // if affiliation is specified by client, the affiliation value must be configured in CA
   const secret = await caClient.register(
     {
-      affiliation: 'org1.department1',
+      affiliation: '',
       enrollmentID: newUserId,
       attrs: userAttributes,
       role,
@@ -124,7 +123,8 @@ const createUserIdentity = async (
   email: string,
   type: string,
   role: string,
-  req: Request
+  orgId: string,
+  adminId: string
 ) => {
   const org = type;
 
@@ -137,20 +137,25 @@ const createUserIdentity = async (
 
   const attrs: IKeyValueAttribute[] = [
     {
-      name: 'email',
-      value: email,
+      name: 'role',
+      value: role,
       ecert: true,
     },
     {
-      name: 'role',
-      value: role,
+      name: 'org',
+      value: orgId,
+      ecert: true,
+    },
+    {
+      name: 'orgType',
+      value: type,
       ecert: true,
     },
   ];
 
   const netRole = role === 'admin' ? role : 'client';
 
-  const adminUserId = 'admin';
+  const adminUserId = role === 'admin' ? role : adminId;
 
   await registerAndEnrollUser(
     caClient,
@@ -158,8 +163,7 @@ const createUserIdentity = async (
     adminUserId,
     email,
     netRole,
-    attrs,
-    type
+    attrs
   );
 };
 

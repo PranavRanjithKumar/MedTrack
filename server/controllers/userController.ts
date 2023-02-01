@@ -50,21 +50,4 @@ const getUser: RequestHandler<{ id: string }> = catchAsync(
   }
 );
 
-const getAllUsers: RequestHandler<{ orgId: string }> = catchAsync(
-  async (req, res, next) => {
-    let orgQuery = {};
-    if (req.params.orgId) orgQuery = { organization: req.params.orgId };
-    const user = await User.find(orgQuery);
-
-    if (!user) return next(new AppError('No users found!', 200));
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        data: user,
-      },
-    });
-  }
-);
-
-export { createUser, getUser, getAllUsers };
+export { createUser, getUser };

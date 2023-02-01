@@ -10,7 +10,6 @@ router.use(authController.protect);
 
 router
   .route('/')
-  .get(authController.restrictToRoles('admin'), userController.getAllUsers)
   .post(
     authController.restrictToRoles('admin', 'manager'),
     userController.createUser

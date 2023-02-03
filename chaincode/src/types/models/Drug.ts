@@ -11,10 +11,13 @@ export default class Drug {
     public docType: "drug";
 
     @Property()
-    public name: "string";
+    public name: string;
 
     @Property()
-    public description: "string";
+    public description: string;
+
+    @Property()
+    public batchSize: number;
 
     @Property()
     public catalogueId: string;

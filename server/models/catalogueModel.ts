@@ -1,11 +1,13 @@
-import { Schema, Types, model } from 'mongoose';
+import { Schema, Types, model, PopulatedDoc, Document } from 'mongoose';
+import { IDrug } from './drugModel';
+import { IOrganization } from './organizationModel';
 
 export interface ICatalogue {
   code: string;
   unitQuantity: number;
   unitQuantityType: string;
-  drug: Types.ObjectId;
-  organization: Types.ObjectId;
+  drug: PopulatedDoc<Document<Types.ObjectId> & IDrug>;
+  organization: PopulatedDoc<Document<Types.ObjectId> & IOrganization>;
 }
 
 // 2. Create a Schema corresponding to the document interface.

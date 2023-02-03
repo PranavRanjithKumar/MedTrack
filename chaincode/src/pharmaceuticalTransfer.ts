@@ -39,9 +39,8 @@ export class PharmaceuticalTransfer extends Contract {
         // We need to check if the composition items used in the drug are actually
         // raw materials and are owned by the organization
         const allPromises = Promise.all(
-            newDrug.constitution.map(
-                (item) => this.OrgOwnsAsset(ctx, item.assetId),
-                "raw-material"
+            newDrug.constitution.map((item) =>
+                this.OrgOwnsAsset(ctx, item.assetId, "raw-material")
             )
         );
 
@@ -77,7 +76,7 @@ export class PharmaceuticalTransfer extends Contract {
     public async OrgOwnsAsset(
         ctx: Context,
         id: string,
-        type = undefined
+        type: string
     ): Promise<boolean> {
         // Check if the asset exists
         const exists = await this.AssetExists(ctx, id);
@@ -95,7 +94,7 @@ export class PharmaceuticalTransfer extends Contract {
                 `FORBIDDENERROR: The asset does not belong to this organization`
             );
 
-        if (type && rawMaterialOrDrug.docType !== type)
+        if (type !== "none" && rawMaterialOrDrug.docType !== type)
             throw new Error(
                 `FORBIDDENERROR: The asset does not belong to this organization`
             );
@@ -154,7 +153,7 @@ export class PharmaceuticalTransfer extends Contract {
         );
 
         const allPromises = Promise.all(
-            drugIds.map((drug) => this.OrgOwnsAsset(ctx, drug))
+            drugIds.map((drug) => this.OrgOwnsAsset(ctx, drug, "none"))
         );
 
         // Throw error if any asset doesn't belong to the organization

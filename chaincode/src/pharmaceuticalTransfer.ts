@@ -36,6 +36,21 @@ export class PharmaceuticalTransfer extends Contract {
     @Transaction()
     public async CreateDrug(ctx: Context, drug: string): Promise<void> {
         const newDrug = JSON.parse(drug) as Drug;
+        // We need to check if the composition items used in the drug are actually
+        // raw materials and are owned by the organization
+        const allPromises = Promise.all(
+            newDrug.constitution.map(
+                (item) => this.OrgOwnsAsset(ctx, item.assetId),
+                "raw-material"
+            )
+        );
+
+        try {
+            await allPromises;
+        } catch (error) {
+            throw error;
+        }
+
         // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
         await ctx.stub.putState(
             newDrug.id,
@@ -59,7 +74,11 @@ export class PharmaceuticalTransfer extends Contract {
 
     @Transaction(false)
     @Returns("boolean")
-    public async OrgOwnsAsset(ctx: Context, id: string): Promise<boolean> {
+    public async OrgOwnsAsset(
+        ctx: Context,
+        id: string,
+        type = undefined
+    ): Promise<boolean> {
         // Check if the asset exists
         const exists = await this.AssetExists(ctx, id);
         if (!exists) {
@@ -69,13 +88,19 @@ export class PharmaceuticalTransfer extends Contract {
         const rawMaterialOrDrug = JSON.parse(assetString) as RawMaterial | Drug;
 
         // TODO: Comment it later
-        const clientOrgId =
-            ctx.clientIdentity.getAttributeValue("org") ?? "654wad-thhf7-thui4";
+        const clientOrgId = ctx.clientIdentity.getAttributeValue("org");
 
-        if (rawMaterialOrDrug.currentOwnerOrgId === clientOrgId) return true;
-        throw new Error(
-            `FORBIDDENERROR: The asset does not belong to this organization`
-        );
+        if (rawMaterialOrDrug.currentOwnerOrgId !== clientOrgId)
+            throw new Error(
+                `FORBIDDENERROR: The asset does not belong to this organization`
+            );
+
+        if (type && rawMaterialOrDrug.docType !== type)
+            throw new Error(
+                `FORBIDDENERROR: The asset does not belong to this organization`
+            );
+
+        return true;
     }
 
     // Demand Items from the stakeholders
@@ -111,8 +136,7 @@ export class PharmaceuticalTransfer extends Contract {
 
         //check if the organization can make the transfer
         // TODO: Comment it later
-        const clientOrgId =
-            ctx.clientIdentity.getAttributeValue("org") ?? "654wad-thhf7-thui4";
+        const clientOrgId = ctx.clientIdentity.getAttributeValue("org");
 
         if (request.transferringOrgId !== clientOrgId)
             throw new Error(

@@ -109,15 +109,16 @@ const handleRequestApproval: RequestHandler<{ id: string }> = catchAsync(
         code,
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         status: 'success',
         message: 'Drug has been added successfully',
         data: drug,
       });
-    } else if (approval === 'REJECTED') {
+    }
+    if (approval === 'REJECTED') {
       await Request.findByIdAndRemove(requestId);
 
-      res.status(204).json({
+      return res.status(204).json({
         status: 'success',
         message: 'The Request has been turned down!',
       });

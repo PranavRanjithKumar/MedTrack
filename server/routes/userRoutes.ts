@@ -6,14 +6,12 @@ const router = Router({ mergeParams: true });
 
 router.route('/login').post(authController.login);
 
-router.use(authController.protect);
+// router.use(authController.protect);
 
-router
-  .route('/')
-  .post(
-    authController.restrictToRoles('admin', 'manager'),
-    userController.createUser
-  );
+router.route('/').post(
+  // authController.restrictToRoles('admin', 'manager'),
+  userController.createUser
+);
 
 router
   .route('/:id')

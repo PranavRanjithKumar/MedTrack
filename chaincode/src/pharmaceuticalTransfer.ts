@@ -5,6 +5,7 @@ import {
     Returns,
     Transaction,
 } from "fabric-contract-api";
+import { Iterators } from "fabric-shim";
 import stringify from "json-stringify-deterministic";
 import sortKeysRecursive from "sort-keys-recursive";
 import location from "./types/Location";
@@ -62,6 +63,29 @@ export class PharmaceuticalTransfer extends Contract {
     public async AssetExists(ctx: Context, id: string): Promise<boolean> {
         const assetJSON = await ctx.stub.getState(id);
         return assetJSON && assetJSON.length > 0;
+    }
+
+    @Transaction(false)
+    public async GetQueryResultForQueryString(
+        ctx: Context,
+        queryString: string
+    ): Promise<string> {
+        let promiseOfIterator = ctx.stub.getQueryResult(queryString);
+        let result = await this.getAllResults(ctx, promiseOfIterator);
+        return result.toString();
+    }
+
+    @Transaction(false)
+    public async getAllResults(
+        ctx: Context,
+        promiseOfIterator: Promise<Iterators.StateQueryIterator> &
+            AsyncIterable<Iterators.KV>
+    ) {
+        const allResults = [];
+        for await (const res of promiseOfIterator) {
+            allResults.push(res.value.toString());
+        }
+        return allResults;
     }
 
     // ReadAsset returns the asset stored in the world state with given id.
@@ -217,6 +241,34 @@ export class PharmaceuticalTransfer extends Contract {
         await ctx.stub.putState(
             request.id,
             Buffer.from(stringify(sortKeysRecursive(request)))
+        );
+    }
+
+    @Transaction()
+    public async getAllRequests(ctx: Context): Promise<string> {
+        const clientOrgId = ctx.clientIdentity.getAttributeValue("org");
+
+        let queryString: any = {};
+        queryString.selector = {};
+        queryString.selector.docType = "request";
+        queryString.selector.requestingOrgId = clientOrgId;
+        return await this.GetQueryResultForQueryString(
+            ctx,
+            JSON.stringify(queryString)
+        );
+    }
+
+    @Transaction()
+    public async getAllTransfers(ctx: Context): Promise<string> {
+        const clientOrgId = ctx.clientIdentity.getAttributeValue("org");
+
+        let queryString: any = {};
+        queryString.selector = {};
+        queryString.selector.docType = "request";
+        queryString.selector.transferringOrgId = clientOrgId;
+        return await this.GetQueryResultForQueryString(
+            ctx,
+            JSON.stringify(queryString)
         );
     }
 }

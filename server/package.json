@@ -22,6 +22,7 @@
     "mongoose": "^6.8.3",
     "morgan": "^1.10.0",
     "nodemailer": "^6.9.0",
+    "uuid": "^9.0.0",
     "validator": "^13.7.0"
   },
   "devDependencies": {
@@ -31,6 +32,7 @@
     "@types/morgan": "^1.9.4",
     "@types/node": "^18.11.18",
     "@types/nodemailer": "^6.4.7",
+    "@types/uuid": "^9.0.0",
     "@types/validator": "^13.7.10",
     "@typescript-eslint/eslint-plugin": "^5.48.0",
     "@typescript-eslint/parser": "^5.48.0",

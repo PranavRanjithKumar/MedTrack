@@ -2,6 +2,7 @@
 import { RequestHandler, Response } from 'express';
 import jwt, { Secret } from 'jsonwebtoken';
 import { Types, Document } from 'mongoose';
+import { nextTick } from 'process';
 import User, { IUser, IUserMethods } from '../models/userModel';
 import AppError from '../utils/AppError';
 import { connectToGateway } from '../utils/appUtils';
@@ -142,6 +143,21 @@ const restrictToRoles: (...roles: string[]) => RequestHandler =
     next();
   };
 
+const allowOnlyOrgMembers: RequestHandler<{ orgId: string }> = catchAsync(
+  async (req, res, next) => {
+    const { orgId } = req.params;
+    if (orgId !== req.user?.organization?.id)
+      // Check if the user belongs to the organization
+      return next(
+        new AppError(
+          'Only members of this organization can access this route',
+          403
+        )
+      );
+    next();
+  }
+);
+
 const connectToChannel: RequestHandler = catchAsync(async (req, res, next) => {
   let orgType;
   let id;
@@ -169,6 +185,7 @@ export {
   signToken,
   login,
   protect,
+  allowOnlyOrgMembers,
   restrictToOrgs,
   restrictToRoles,
   connectToChannel,

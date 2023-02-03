@@ -4,18 +4,21 @@ import * as authController from '../controllers/authController';
 
 const router = Router({ mergeParams: true });
 
-router.use(authController.protect, authController.connectToChannel);
+router.use(
+  authController.protect,
+  authController.restrictToOrgs(
+    'manufacturer',
+    'distributor',
+    'retailer',
+    'consumer'
+  ),
+  authController.allowOnlyOrgMembers,
+  authController.connectToChannel
+);
 
 router
   .route('/')
-  .post(
-    authController.restrictToOrgs(
-      'manufacturer',
-      'distributor',
-      'retailer',
-      'consumer'
-    ),
-    transferController.makeRequest
-  );
+  .get(transferController.getAllRequests)
+  .post(transferController.makeRequest);
 
 export default router;

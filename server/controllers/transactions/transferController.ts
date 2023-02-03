@@ -9,120 +9,124 @@ import catchAsync from '../../utils/catchAsync';
 
 const requestableOrgs = ['manufacturer', 'distributor', 'retailer', 'consumer'];
 
-const makeRequest: RequestHandler<{ orgId: string }> = catchAsync(
+const makeRequest: RequestHandler = catchAsync(async (req, res, next) => {
+  const contract = getPharmaceuticalTransferContract(req);
+
+  const id = uuidv4();
+  const docType = 'request';
+  const status = 'sent';
+  const requestedDate = new Date().toISOString();
+  const requestingOrgId = req.user?.organization?.id;
+  const requestingOrgType = (req.user?.organization as IOrganization).type;
+  const { transferringOrgId, latitude, longitude, requestedItems } =
+    req.body as {
+      transferringOrgId: string;
+      latitude: number;
+      longitude: number;
+      requestedItems: {
+        catalogueId: string;
+        drugId: string;
+        quantity: number;
+        quantityType: string;
+      }[];
+    };
+
+  const transferringOrg = await Organization.findById(transferringOrgId);
+
+  // Allow only organizations to request to the
+  // immediate preceeding organization in the supply chain
+  if (!transferringOrg)
+    return next(new AppError('No organization found with this ID', 400));
+
+  const transferringOrgType = transferringOrg.type;
+
+  const transferringOrgIndex = requestableOrgs.findIndex(
+    (type) => type === transferringOrgType
+  );
+
+  if (requestableOrgs[transferringOrgIndex + 1] !== requestingOrgType)
+    return next(new AppError('You cannot request from this organization', 400));
+
+  // Check if the requested drugs are present in the transferring organization catalogue
+  const agg = [
+    {
+      $match: {
+        organization: new mongoose.Types.ObjectId(transferringOrgId),
+      },
+    },
+    {
+      $group: {
+        _id: '$organization',
+        drugs: {
+          $push: '$code',
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+      },
+    },
+  ];
+
+  // Get the catalogue items of the organization
+  const { drugs: drugItemsInCatalogue } = (
+    (await Catalogue.aggregate(agg)) as {
+      drugs: string[];
+    }[]
+  )[0];
+
+  // Get the requested catalogue items
+  const requestedCatalogueDrugs = requestedItems.map(
+    (item) => item.catalogueId
+  );
+
+  // Check if all the requested items are in the catalogue
+  const allPresent = requestedCatalogueDrugs.every((drugId) =>
+    drugItemsInCatalogue.includes(drugId)
+  );
+
+  // If not present throw bad request
+  if (!allPresent)
+    return next(
+      new AppError(
+        `One or more requested items are not present in the organization's catalogue`,
+        400
+      )
+    );
+
+  const newRequest = {
+    id,
+    docType,
+    requestingOrgId,
+    requestingOrgType,
+    transferringOrgId,
+    transferringOrgType,
+    requestedDate,
+    requestedFromLocation: [latitude, longitude],
+    status,
+    requestedItems,
+  };
+
+  await contract.submitTransaction('makeRequest', JSON.stringify(newRequest));
+
+  res.status(201).json({
+    status: 'success',
+    message: 'Request sent successfully',
+  });
+});
+
+const getAllRequests: RequestHandler<{ orgId: string }> = catchAsync(
   async (req, res, next) => {
     const contract = getPharmaceuticalTransferContract(req);
 
-    const id = uuidv4();
-    const { orgId } = req.params;
-    const docType = 'request';
-    const status = 'sent';
-    const requestedDate = new Date().toISOString();
-    const requestingOrgId = req.user?.organization?.id;
-    const requestingOrgType = (req.user?.organization as IOrganization).type;
-    const { transferringOrgId, latitude, longitude, requestedItems } =
-      req.body as {
-        transferringOrgId: string;
-        latitude: number;
-        longitude: number;
-        requestedItems: {
-          catalogueId: string;
-          drugId: string;
-          quantity: number;
-          quantityType: string;
-        }[];
-      };
+    const allRequests = (
+      await contract.submitTransaction('getAllRequests')
+    ).toString();
 
-    const transferringOrg = await Organization.findById(transferringOrgId);
-
-    // Allow only organizations to request to the
-    // immediate preceeding organization in the supply chain
-    if (!transferringOrg)
-      return next(new AppError('No organization found with this ID', 400));
-
-    const transferringOrgType = transferringOrg.type;
-
-    const transferringOrgIndex = requestableOrgs.findIndex(
-      (type) => type === transferringOrgType
-    );
-
-    if (requestableOrgs[transferringOrgIndex + 1] !== requestingOrgType)
-      return next(
-        new AppError('You cannot request from this organization', 400)
-      );
-
-    // Check if the requested drugs are present in the transferring organization catalogue
-    const agg = [
-      {
-        $match: {
-          organization: new mongoose.Types.ObjectId(transferringOrgId),
-        },
-      },
-      {
-        $group: {
-          _id: '$organization',
-          drugs: {
-            $push: '$code',
-          },
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-        },
-      },
-    ];
-
-    // Get the catalogue items of the organization
-    const { drugs: drugItemsInCatalogue } = (
-      (await Catalogue.aggregate(agg)) as {
-        drugs: string[];
-      }[]
-    )[0];
-
-    // Get the requested catalogue items
-    const requestedCatalogueDrugs = requestedItems.map(
-      (item) => item.catalogueId
-    );
-
-    // Check if all the requested items are in the catalogue
-    const allPresent = requestedCatalogueDrugs.every((drugId) =>
-      drugItemsInCatalogue.includes(drugId)
-    );
-
-    // If not present throw bad request
-    if (!allPresent)
-      return next(
-        new AppError(
-          `One or more requested items are not present in the organization's catalogue`,
-          400
-        )
-      );
-
-    if (orgId !== req.user?.organization?.id)
-      // Check if the user belongs to the organization
-      return next(
-        new AppError('Only organization members can request assets', 403)
-      );
-
-    const newRequest = {
-      id,
-      docType,
-      requestingOrgId,
-      requestingOrgType,
-      transferringOrgId,
-      transferringOrgType,
-      requestedDate,
-      requestedFromLocation: [latitude, longitude],
-      status,
-      requestedItems,
-    };
-
-    await contract.submitTransaction('makeRequest', JSON.stringify(newRequest));
-
-    res.status(201).json({
+    res.status(200).json({
       status: 'success',
-      message: 'Request sent successfully',
+      data: JSON.parse(allRequests),
     });
   }
 );
@@ -166,6 +170,19 @@ const initiateTransfer: RequestHandler<{ orgId: string }> = catchAsync(
   }
 );
 
-export { makeRequest, initiateTransfer };
-// Get all requests for/ made by an organization
-// Get a particular request
+const getAllTransfers: RequestHandler<{ orgId: string }> = catchAsync(
+  async (req, res, next) => {
+    const contract = getPharmaceuticalTransferContract(req);
+
+    const allTransfers = (
+      await contract.submitTransaction('getAllTransfers')
+    ).toString();
+
+    res.status(200).json({
+      status: 'success',
+      data: JSON.parse(allTransfers),
+    });
+  }
+);
+
+export { makeRequest, initiateTransfer, getAllRequests, getAllTransfers };

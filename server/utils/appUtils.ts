@@ -1,5 +1,11 @@
 import { Request } from 'express';
-import { Gateway, GatewayOptions, Wallet, Wallets } from 'fabric-network';
+import {
+  Contract,
+  Gateway,
+  GatewayOptions,
+  Wallet,
+  Wallets,
+} from 'fabric-network';
 import * as fs from 'fs';
 import * as path from 'path';
 import AppError from './AppError';
@@ -98,4 +104,19 @@ const connectToGateway = async (req: Request) => {
   }
 };
 
-export { getMSPId, buildCCPOrg, buildWallet, connectToGateway };
+const getPharmaceuticalTransferContract = (req: Request) => {
+  const contract = req.network?.getContract(
+    process.env.HLF_CHAINCODE_NAME as string,
+    'PharmaceuticalTransfer'
+  ) as Contract;
+
+  return contract;
+};
+
+export {
+  getMSPId,
+  buildCCPOrg,
+  buildWallet,
+  connectToGateway,
+  getPharmaceuticalTransferContract,
+};

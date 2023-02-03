@@ -10,10 +10,10 @@ router
   .route('/')
   .post(
     authController.restrictToOrgs(
+      'supplier',
       'manufacturer',
       'distributor',
-      'retailer',
-      'consumer'
+      'retailer'
     ),
     transferController.initiateTransfer
   );

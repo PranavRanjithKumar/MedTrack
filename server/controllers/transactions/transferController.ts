@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import { RequestHandler } from 'express';
 import Catalogue from '../../models/catalogueModel';
@@ -10,6 +11,8 @@ const requestableOrgs = ['manufacturer', 'distributor', 'retailer', 'consumer'];
 
 const makeRequest: RequestHandler<{ orgId: string }> = catchAsync(
   async (req, res, next) => {
+    const contract = getPharmaceuticalTransferContract(req);
+
     const id = uuidv4();
     const { orgId } = req.params;
     const docType = 'request';
@@ -50,7 +53,11 @@ const makeRequest: RequestHandler<{ orgId: string }> = catchAsync(
 
     // Check if the requested drugs are present in the transferring organization catalogue
     const agg = [
-      { $match: { organization: transferringOrgId } },
+      {
+        $match: {
+          organization: new mongoose.Types.ObjectId(transferringOrgId),
+        },
+      },
       {
         $group: {
           _id: '$organization',
@@ -98,8 +105,6 @@ const makeRequest: RequestHandler<{ orgId: string }> = catchAsync(
         new AppError('Only organization members can request assets', 403)
       );
 
-    const contract = getPharmaceuticalTransferContract(req);
-
     const newRequest = {
       id,
       docType,
@@ -143,18 +148,15 @@ const initiateTransfer: RequestHandler<{ orgId: string }> = catchAsync(
     if (!requestId)
       return next(new AppError('No request ID present in the body', 400));
 
-    const newTransfer = {
-      packageId,
-      sentDate,
-      sentItems,
-      sentFromLocation: [latitude, longitude],
-    };
-
     const contract = getPharmaceuticalTransferContract(req);
 
     await contract.submitTransaction(
       'initiateTransfer',
-      JSON.stringify(newTransfer)
+      requestId,
+      packageId,
+      JSON.stringify(sentItems),
+      sentDate,
+      JSON.stringify([latitude, longitude])
     );
 
     res.status(201).json({

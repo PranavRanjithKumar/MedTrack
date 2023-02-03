@@ -71,8 +71,7 @@ const connectToGateway = async (req: Request) => {
 
   const wallet = await buildWallet(orgType as string);
 
-  if (req.user && req.user.role === 'admin') userId = 'admin';
-  else userId = req.user?.email;
+  userId = req.user?.email;
 
   // using asLocalhost as this gateway is using a fabric network deployed locally };
   const gatewayOpts: GatewayOptions = {

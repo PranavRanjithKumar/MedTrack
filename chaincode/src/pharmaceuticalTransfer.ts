@@ -72,10 +72,9 @@ export class PharmaceuticalTransfer extends Contract {
     ): Promise<string> {
         let promiseOfIterator = ctx.stub.getQueryResult(queryString);
         let result = await this.getAllResults(ctx, promiseOfIterator);
-        return result.toString();
+        return JSON.stringify(result);
     }
 
-    @Transaction(false)
     public async getAllResults(
         ctx: Context,
         promiseOfIterator: Promise<Iterators.StateQueryIterator> &
@@ -259,6 +258,21 @@ export class PharmaceuticalTransfer extends Contract {
     }
 
     @Transaction()
+    public async getOneRequest(ctx: Context, id: string): Promise<string> {
+        const clientOrgId = ctx.clientIdentity.getAttributeValue("org");
+
+        let queryString: any = {};
+        queryString.selector = {};
+        queryString.selector.docType = "request";
+        queryString.selector.requestingOrgId = clientOrgId;
+        queryString.selector.id = id;
+        return await this.GetQueryResultForQueryString(
+            ctx,
+            JSON.stringify(queryString)
+        );
+    }
+
+    @Transaction()
     public async getAllTransfers(ctx: Context): Promise<string> {
         const clientOrgId = ctx.clientIdentity.getAttributeValue("org");
 
@@ -270,5 +284,111 @@ export class PharmaceuticalTransfer extends Contract {
             ctx,
             JSON.stringify(queryString)
         );
+    }
+
+    @Transaction()
+    public async getOneTransfer(ctx: Context, id: string): Promise<string> {
+        const clientOrgId = ctx.clientIdentity.getAttributeValue("org");
+
+        let queryString: any = {};
+        queryString.selector = {};
+        queryString.selector.docType = "request";
+        queryString.selector.transferringOrgId = clientOrgId;
+        queryString.selector.id = id;
+        return await this.GetQueryResultForQueryString(
+            ctx,
+            JSON.stringify(queryString)
+        );
+    }
+
+    @Transaction()
+    public async getOwnedAsset(ctx: Context, id: string): Promise<string> {
+        const clientOrgId = ctx.clientIdentity.getAttributeValue("org");
+
+        let queryString: any = {};
+        queryString.selector = {};
+        queryString.selector.currentOwnerOrgId = clientOrgId;
+        queryString.selector.id = id;
+        return await this.GetQueryResultForQueryString(
+            ctx,
+            JSON.stringify(queryString)
+        );
+    }
+
+    @Transaction()
+    public async getInHouseAssets(ctx: Context): Promise<string> {
+        const clientOrgId = ctx.clientIdentity.getAttributeValue("org");
+        const clientOrgType = ctx.clientIdentity.getAttributeValue("orgType");
+
+        let docType: string;
+        if (clientOrgType === "supplier") docType = "raw-material";
+        else docType = "drug";
+
+        let queryString: any = {};
+        queryString.selector = {};
+        queryString.selector.docType = docType;
+        queryString.selector.manufacturingOrgId = clientOrgId;
+        queryString.selector.currentOwnerOrgId = clientOrgId;
+        return await this.GetQueryResultForQueryString(
+            ctx,
+            JSON.stringify(queryString)
+        );
+    }
+
+    @Transaction()
+    public async getOutSourcedAssets(ctx: Context): Promise<string> {
+        const clientOrgId = ctx.clientIdentity.getAttributeValue("org");
+        const clientOrgType = ctx.clientIdentity.getAttributeValue("orgType");
+
+        let docType: string;
+        switch (clientOrgType) {
+            case "manufacturer":
+                docType = "raw-material";
+                break;
+            case "distributor":
+            case "retailer":
+                docType = "drug";
+                break;
+            default:
+                throw new Error(
+                    "FORBIDDEN: The request is not meant for your organization"
+                );
+        }
+
+        let queryString: any = {};
+        queryString.selector = {};
+        queryString.selector.docType = docType;
+        queryString.selector.currentOwnerOrgId = clientOrgId;
+        queryString.selector.manufacturingOrgId = {};
+        queryString.selector.manufacturingOrgId["$ne"] = clientOrgId;
+        return await this.GetQueryResultForQueryString(
+            ctx,
+            JSON.stringify(queryString)
+        );
+    }
+
+    @Transaction()
+    public async getAssetProvenance(
+        ctx: Context,
+        assetId: string
+    ): Promise<string> {
+        const promiseOfIterator = ctx.stub.getHistoryForKey(assetId);
+
+        const results = [];
+        for await (const keyMod of promiseOfIterator) {
+            const resp = {
+                timestamp: keyMod.timestamp,
+                txid: keyMod.txId,
+                data: "",
+            };
+            if (keyMod.isDelete) {
+                resp.data = "KEY DELETED";
+            } else {
+                resp.data = keyMod.value.toString();
+            }
+            results.push(resp);
+        }
+
+        return JSON.stringify(results);
     }
 }

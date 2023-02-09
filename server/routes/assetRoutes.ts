@@ -11,10 +11,27 @@ router
   .route('/')
   .post(
     authController.restrictToOrgs('supplier', 'manufacturer'),
+    authController.allowOnlyOrgMembers,
     assetController.storeAsset
   );
 
-// View details about an asset
-router.route('/:id').get(assetController.getAsset);
+// Get all the In-House produced goods
+router
+  .route('/in-house')
+  .get(
+    authController.restrictToOrgs('supplier', 'manufacturer'),
+    authController.allowOnlyOrgMembers,
+    assetController.getInHouseAssets
+  );
 
+// Get all the out-sourced goods
+router
+  .route('/out-sourced')
+  .get(
+    authController.restrictToOrgs('manufacturer', 'distributor', 'retailer'),
+    authController.allowOnlyOrgMembers,
+    assetController.getOutSourcedAssets
+  );
+
+router.route('/provenance').post(assetController.getAssetProvenance);
 export default router;

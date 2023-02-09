@@ -121,7 +121,7 @@ const getAllRequests: RequestHandler<{ orgId: string }> = catchAsync(
     const contract = getPharmaceuticalTransferContract(req);
 
     const allRequests = (
-      await contract.submitTransaction('getAllRequests')
+      await contract.evaluateTransaction('getAllRequests')
     ).toString();
 
     res.status(200).json({
@@ -130,6 +130,21 @@ const getAllRequests: RequestHandler<{ orgId: string }> = catchAsync(
     });
   }
 );
+
+const getOneRequest: RequestHandler<{ orgId: string; reqId: string }> =
+  catchAsync(async (req, res, next) => {
+    const requestId = req.params.reqId;
+    const contract = getPharmaceuticalTransferContract(req);
+
+    const allRequests = (
+      await contract.evaluateTransaction('getOneRequest', requestId)
+    ).toString();
+
+    res.status(200).json({
+      status: 'success',
+      data: JSON.parse(allRequests),
+    });
+  });
 
 const initiateTransfer: RequestHandler<{ orgId: string }> = catchAsync(
   async (req, res, next) => {
@@ -175,7 +190,7 @@ const getAllTransfers: RequestHandler<{ orgId: string }> = catchAsync(
     const contract = getPharmaceuticalTransferContract(req);
 
     const allTransfers = (
-      await contract.submitTransaction('getAllTransfers')
+      await contract.evaluateTransaction('getAllTransfers')
     ).toString();
 
     res.status(200).json({
@@ -185,4 +200,26 @@ const getAllTransfers: RequestHandler<{ orgId: string }> = catchAsync(
   }
 );
 
-export { makeRequest, initiateTransfer, getAllRequests, getAllTransfers };
+const getOneTransfer: RequestHandler<{ orgId: string; reqId: string }> =
+  catchAsync(async (req, res, next) => {
+    const requestId = req.params.reqId;
+    const contract = getPharmaceuticalTransferContract(req);
+
+    const allRequests = (
+      await contract.evaluateTransaction('getOneTransfer', requestId)
+    ).toString();
+
+    res.status(200).json({
+      status: 'success',
+      data: JSON.parse(allRequests),
+    });
+  });
+
+export {
+  makeRequest,
+  initiateTransfer,
+  getAllRequests,
+  getOneRequest,
+  getAllTransfers,
+  getOneTransfer,
+};

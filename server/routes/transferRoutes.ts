@@ -21,4 +21,6 @@ router
   .get(transferController.getAllTransfers)
   .post(transferController.initiateTransfer);
 
+router.route('/:reqId').get(transferController.getOneTransfer);
+
 export default router;

@@ -7,14 +7,44 @@ import AppError from '../../utils/AppError';
 import { getPharmaceuticalTransferContract } from '../../utils/appUtils';
 import catchAsync from '../../utils/catchAsync';
 
-const getAsset: RequestHandler<{ id: string }> = catchAsync(
+const getInHouseAssets: RequestHandler<{ orgId: string }> = catchAsync(
   async (req, res, next) => {
-    const assetId = req.params.id;
-
     const contract = getPharmaceuticalTransferContract(req);
 
     const asset = (
-      await contract.submitTransaction('ReadAsset', assetId)
+      await contract.evaluateTransaction('getInHouseAssets')
+    ).toString();
+
+    res.status(200).send({
+      status: 'success',
+      data: JSON.parse(asset),
+    });
+  }
+);
+
+const getOutSourcedAssets: RequestHandler<{ orgId: string }> = catchAsync(
+  async (req, res, next) => {
+    const contract = getPharmaceuticalTransferContract(req);
+
+    const asset = (
+      await contract.evaluateTransaction('getOutSourcedAssets')
+    ).toString();
+
+    res.status(200).send({
+      status: 'success',
+      data: JSON.parse(asset),
+    });
+  }
+);
+
+const getAssetProvenance: RequestHandler = catchAsync(
+  async (req, res, next) => {
+    const contract = getPharmaceuticalTransferContract(req);
+
+    const assetId = (req.body as { id: string }).id;
+
+    const asset = (
+      await contract.evaluateTransaction('getAssetProvenance', assetId)
     ).toString();
 
     res.status(200).send({
@@ -119,4 +149,9 @@ const storeAsset: RequestHandler<{ orgId: string }> = catchAsync(
     });
   }
 );
-export { getAsset, storeAsset };
+export {
+  getOutSourcedAssets,
+  getInHouseAssets,
+  storeAsset,
+  getAssetProvenance,
+};

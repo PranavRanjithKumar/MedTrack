@@ -12,7 +12,7 @@ const getInHouseAssets: RequestHandler<{ orgId: string }> = catchAsync(
     const contract = getPharmaceuticalTransferContract(req);
 
     const asset = (
-      await contract.evaluateTransaction('getInHouseAssets')
+      await contract.submitTransaction('getInHouseAssets')
     ).toString();
 
     res.status(200).send({
@@ -27,7 +27,7 @@ const getOutSourcedAssets: RequestHandler<{ orgId: string }> = catchAsync(
     const contract = getPharmaceuticalTransferContract(req);
 
     const asset = (
-      await contract.evaluateTransaction('getOutSourcedAssets')
+      await contract.submitTransaction('getOutSourcedAssets')
     ).toString();
 
     res.status(200).send({
@@ -44,7 +44,7 @@ const getAssetProvenance: RequestHandler = catchAsync(
     const assetId = (req.body as { id: string }).id;
 
     const asset = (
-      await contract.evaluateTransaction('getAssetProvenance', assetId)
+      await contract.submitTransaction('getAssetProvenance', assetId)
     ).toString();
 
     res.status(200).send({

@@ -121,7 +121,7 @@ const getAllRequests: RequestHandler<{ orgId: string }> = catchAsync(
     const contract = getPharmaceuticalTransferContract(req);
 
     const allRequests = (
-      await contract.evaluateTransaction('getAllRequests')
+      await contract.submitTransaction('getAllRequests')
     ).toString();
 
     res.status(200).json({
@@ -137,7 +137,7 @@ const getOneRequest: RequestHandler<{ orgId: string; reqId: string }> =
     const contract = getPharmaceuticalTransferContract(req);
 
     const allRequests = (
-      await contract.evaluateTransaction('getOneRequest', requestId)
+      await contract.submitTransaction('getOneRequest', requestId)
     ).toString();
 
     res.status(200).json({
@@ -190,7 +190,7 @@ const getAllTransfers: RequestHandler<{ orgId: string }> = catchAsync(
     const contract = getPharmaceuticalTransferContract(req);
 
     const allTransfers = (
-      await contract.evaluateTransaction('getAllTransfers')
+      await contract.submitTransaction('getAllTransfers')
     ).toString();
 
     res.status(200).json({
@@ -206,7 +206,7 @@ const getOneTransfer: RequestHandler<{ orgId: string; reqId: string }> =
     const contract = getPharmaceuticalTransferContract(req);
 
     const allRequests = (
-      await contract.evaluateTransaction('getOneTransfer', requestId)
+      await contract.submitTransaction('getOneTransfer', requestId)
     ).toString();
 
     res.status(200).json({

@@ -17,7 +17,6 @@ const catalogueSchema = new Schema<ICatalogue>({
     trim: true,
     required: [true, 'Please provide unique code for this catalogue item'],
     uppercase: true,
-    unique: true,
   },
   unitQuantity: {
     type: Number,
@@ -36,6 +35,11 @@ const catalogueSchema = new Schema<ICatalogue>({
     ref: 'Organization',
   },
 });
+
+catalogueSchema.index(
+  { unitQuantity: 1, unitQuantityType: 1, drug: 1, organization: 1 },
+  { unique: true }
+);
 
 catalogueSchema.pre(/^find/, function (next) {
   this.populate({

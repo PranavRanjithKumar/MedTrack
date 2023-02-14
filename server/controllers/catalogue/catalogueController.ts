@@ -105,9 +105,9 @@ const getCatalogueForOrganization: RequestHandler<{ orgId: string }> =
 
 const addCatalogueItemToCatalogue: RequestHandler<{
   orgId: string;
-  catalogueId: string;
 }> = catchAsync(async (req, res, next) => {
-  const { orgId, catalogueId } = req.params;
+  const { orgId } = req.params;
+  const { catalogueId } = req.body as { catalogueId: string };
 
   const catalogueItem = await Catalogue.findById(catalogueId);
 

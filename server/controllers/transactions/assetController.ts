@@ -78,7 +78,6 @@ const storeAsset: RequestHandler<{ orgId: string }> = catchAsync(
       constitution: {
         assetId: string;
         catalogueId: string;
-        drugId: string;
         quantity: number;
         quantityType: string;
       }[];

@@ -10,8 +10,8 @@ router
   .route('/')
   .get(catalogueController.getCatalogueForOrganization)
   .post(
-    authController.restrictToOrgs('supplier', 'manufacturer'),
-    authController.restrictToRoles('admin', 'manager', 'distributor'),
+    authController.restrictToOrgs('supplier', 'manufacturer', 'distributor'),
+    authController.restrictToRoles('admin', 'manager'),
     authController.allowOnlyOrgMembers,
     catalogueController.addDrugToCatalogue,
     catalogueController.addCatalogueItemToCatalogue

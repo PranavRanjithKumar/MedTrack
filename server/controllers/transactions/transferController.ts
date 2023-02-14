@@ -25,7 +25,6 @@ const makeRequest: RequestHandler = catchAsync(async (req, res, next) => {
       longitude: number;
       requestedItems: {
         catalogueId: string;
-        drugId: string;
         quantity: number;
         quantityType: string;
       }[];
@@ -155,7 +154,7 @@ const initiateTransfer: RequestHandler<{ orgId: string }> = catchAsync(
       sentItems: {
         [catalogueId: string]: {
           assetId: string;
-          drugId: string;
+          batchSize?: number;
           quantity: number;
           quantityType: string;
         }[];

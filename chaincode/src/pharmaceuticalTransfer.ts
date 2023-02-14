@@ -82,7 +82,9 @@ export class PharmaceuticalTransfer extends Contract {
     ) {
         const allResults = [];
         for await (const res of promiseOfIterator) {
-            allResults.push(res.value.toString());
+            const resString = res.value.toString();
+            const resObj = JSON.parse(resString);
+            allResults.push(resObj);
         }
         return allResults;
     }
@@ -386,7 +388,8 @@ export class PharmaceuticalTransfer extends Contract {
             } else {
                 resp.data = keyMod.value.toString();
             }
-            results.push(resp);
+            const respObj = { ...resp, data: JSON.parse(resp.data) };
+            results.push(respObj);
         }
 
         return JSON.stringify(results);

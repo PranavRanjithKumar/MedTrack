@@ -4,23 +4,77 @@ import catchAsync from '../../utils/catchAsync';
 import AppError from '../../utils/AppError';
 import Catalogue from '../../models/catalogueModel';
 
-const addToCatalogue: RequestHandler<{ drugId: string }> = catchAsync(
+const addDrugToCatalogue: RequestHandler<{ orgId: string }> = catchAsync(
   async (req, res, next) => {
-    const { drugId } = req.params;
-
     const orgId = req.user?.organization;
 
-    const { code, unitQuantity, unitQuantityType } = req.body as {
+    // Retrieving org type to check if the user adds the right kinda medicine
+    let orgType = '';
+    if (req.user && req.user.organization && 'type' in req.user.organization) {
+      orgType = req.user.organization.type as string;
+    }
+
+    if (orgType === 'distributor') return next();
+
+    const {
+      code,
+      unitQuantity,
+      unitQuantityType,
+      drug: drugId,
+    } = req.body as {
+      drug: string;
       code: string;
       unitQuantity: string;
       unitQuantityType: string;
     };
 
-    if (!drugId) return next(new AppError('No ID found in the route!', 400));
+    // Check if a catalogue Item with this code already exists
+    // in the suppliers' or manufacturers' catalogue
+    const aggregationPipeline = [
+      {
+        $lookup: {
+          from: 'organizations',
+          localField: 'organization',
+          foreignField: '_id',
+          as: 'organization',
+        },
+      },
+      {
+        $unwind: {
+          path: '$organization',
+        },
+      },
+      {
+        $match: {
+          'organization.type': {
+            $in: ['supplier', 'manufacturer'],
+          },
+          code,
+        },
+      },
+    ];
 
+    const catalogueItemAlreadyExists = await Catalogue.aggregate(
+      aggregationPipeline
+    );
+
+    if (catalogueItemAlreadyExists.length > 0)
+      return next(new AppError('Catalogue item code already taken!', 400));
+
+    // Check if the drug actually exists
     const drugWithId = await Drug.findById(drugId);
 
-    if (!drugWithId) return next(new AppError('Drug not found!', 404));
+    if (!drugWithId) return next(new AppError('Drug not found!', 400));
+
+    // Supplier organizations should only be able to add raw materials &
+    // manufacturer organizations should only be able to add drugs
+    if (
+      (orgType === 'supplier' && drugWithId.type !== 'raw-material') ||
+      (orgType === 'manufacturer' && drugWithId.type !== 'drug')
+    )
+      return next(
+        new AppError('Cannot add this type of drug to your catalogue', 400)
+      );
 
     const catalogue = await Catalogue.create({
       code,
@@ -31,7 +85,7 @@ const addToCatalogue: RequestHandler<{ drugId: string }> = catchAsync(
     });
 
     res.status(201).json({
-      status: 'message',
+      status: 'success',
       data: catalogue,
     });
   }
@@ -39,21 +93,46 @@ const addToCatalogue: RequestHandler<{ drugId: string }> = catchAsync(
 
 const getCatalogueForOrganization: RequestHandler<{ orgId: string }> =
   catchAsync(async (req, res, next) => {
-    const orgId = req.params.orgId ?? req.user?.organization;
+    const { orgId } = req.params;
 
-    const catalogue = await Catalogue.find({ organization: orgId });
+    const catalogueItems = await Catalogue.find({ organization: orgId });
 
     res.status(200).json({
-      status: 'message',
-      data: catalogue,
+      status: 'success',
+      data: catalogueItems,
     });
   });
+
+const addCatalogueItemToCatalogue: RequestHandler<{
+  orgId: string;
+  catalogueId: string;
+}> = catchAsync(async (req, res, next) => {
+  const { orgId, catalogueId } = req.params;
+
+  const catalogueItem = await Catalogue.findById(catalogueId);
+
+  if (!catalogueItem)
+    return next(new AppError('No catalogue item found with this ID', 400));
+
+  const catalogue = await Catalogue.create({
+    code: catalogueItem.code,
+    drug: catalogueItem.drug,
+    unitQuantity: catalogueItem.unitQuantity,
+    unitQuantityType: catalogueItem.unitQuantityType,
+    organization: orgId,
+  });
+
+  res.status(201).json({
+    status: 'success',
+    data: catalogue,
+  });
+});
 
 const getCatalogueItem: RequestHandler<{ orgId: string; catalogueId: string }> =
   catchAsync(async (req, res, next) => {
     const { orgId, catalogueId } = req.params;
 
-    const catalogueItem = await Catalogue.find({
+    const catalogueItem = await Catalogue.findOne({
       organization: orgId,
       _id: catalogueId,
     });
@@ -62,9 +141,14 @@ const getCatalogueItem: RequestHandler<{ orgId: string; catalogueId: string }> =
       return next(new AppError('No catalogue Item found!', 404));
 
     res.status(200).json({
-      status: 'message',
+      status: 'success',
       data: catalogueItem,
     });
   });
 
-export { addToCatalogue, getCatalogueForOrganization, getCatalogueItem };
+export {
+  addDrugToCatalogue,
+  getCatalogueForOrganization,
+  getCatalogueItem,
+  addCatalogueItemToCatalogue,
+};

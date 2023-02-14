@@ -67,7 +67,7 @@ const storeAsset: RequestHandler<{ orgId: string }> = catchAsync(
       latitude,
       quantity,
       longitude,
-      composition = undefined,
+      constitution = undefined,
     } = req.body as {
       code: string;
       manufacturingDate: string;
@@ -75,7 +75,7 @@ const storeAsset: RequestHandler<{ orgId: string }> = catchAsync(
       latitude: number;
       quantity: number;
       longitude: number;
-      composition: {
+      constitution: {
         assetId: string;
         catalogueId: string;
         drugId: string;
@@ -138,7 +138,7 @@ const storeAsset: RequestHandler<{ orgId: string }> = catchAsync(
     } else if (orgType === 'manufacturer') {
       asset.docType = 'drug';
       asset.id = uuidv4();
-      const drug = { composition, batchSize: quantity, ...asset };
+      const drug = { constitution, batchSize: quantity, ...asset };
 
       await contract.submitTransaction('CreateDrug', JSON.stringify(drug));
     }

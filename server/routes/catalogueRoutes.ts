@@ -11,8 +11,10 @@ router
   .get(catalogueController.getCatalogueForOrganization)
   .post(
     authController.restrictToOrgs('supplier', 'manufacturer'),
-    authController.restrictToRoles('admin', 'manager'),
-    catalogueController.addToCatalogue
+    authController.restrictToRoles('admin', 'manager', 'distributor'),
+    authController.allowOnlyOrgMembers,
+    catalogueController.addDrugToCatalogue,
+    catalogueController.addCatalogueItemToCatalogue
   );
 
 router.route('/:catalogueId').get(catalogueController.getCatalogueItem);

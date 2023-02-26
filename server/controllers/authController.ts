@@ -2,7 +2,6 @@
 import { RequestHandler, Response } from 'express';
 import jwt, { Secret } from 'jsonwebtoken';
 import { Types, Document } from 'mongoose';
-import { nextTick } from 'process';
 import User, { IUser, IUserMethods } from '../models/userModel';
 import AppError from '../utils/AppError';
 import { connectToGateway } from '../utils/appUtils';
@@ -25,12 +24,18 @@ const signToken = (id: Types.ObjectId) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
+const signRefreshToken = (id: Types.ObjectId) =>
+  jwt.sign({ id }, process.env.REFRESH_TOKEN_SECRET as Secret, {
+    expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN,
+  });
+
 const createSendToken = (
   user: UserDocument,
   statusCode: number,
   res: Response<any, Record<string, any>>
 ) => {
   const token = signToken(user._id);
+  const refreshToken = signRefreshToken(user._id);
 
   // Remove password from output
   // eslint-disable-next-line no-param-reassign
@@ -39,6 +44,7 @@ const createSendToken = (
   res.status(statusCode).json({
     status: 'success',
     token,
+    refreshToken,
     data: {
       user,
     },
@@ -63,6 +69,23 @@ const login: RequestHandler = catchAsync(async (req, res, next) => {
   }
 
   createSendToken(user, 200, res);
+});
+
+const updateAccessToken: RequestHandler = catchAsync(async (req, res, next) => {
+  const { refreshToken } = req.body as { refreshToken: string };
+
+  if (!refreshToken) {
+    return next(new AppError('Refresh Token is required', 401));
+  }
+
+  const decoded = jwt.verify(
+    refreshToken,
+    process.env.REFRESH_TOKEN_SECRET as Secret
+  );
+
+  const newAccessToken = signToken(new Types.ObjectId((decoded as JwtType).id));
+
+  return res.status(200).json({ accessToken: newAccessToken });
 });
 
 const protect: RequestHandler = catchAsync(async (req, res, next) => {
@@ -184,6 +207,7 @@ const connectToChannel: RequestHandler = catchAsync(async (req, res, next) => {
 export {
   signToken,
   login,
+  updateAccessToken,
   protect,
   allowOnlyOrgMembers,
   restrictToOrgs,

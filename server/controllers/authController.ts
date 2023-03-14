@@ -75,7 +75,7 @@ const updateAccessToken: RequestHandler = catchAsync(async (req, res, next) => {
   const { refreshToken } = req.body as { refreshToken: string };
 
   if (!refreshToken) {
-    return next(new AppError('Refresh Token is required', 401));
+    return next(new AppError('Refresh Token is required', 400));
   }
 
   const decoded = jwt.verify(

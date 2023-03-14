@@ -2,6 +2,13 @@ import { RequestHandler } from 'express';
 import Organization, { IOrganization } from '../models/organizationModel';
 import catchAsync from '../utils/catchAsync';
 
+const allOrganizations = [
+  'supplier',
+  'manufacturer',
+  'distributor',
+  'retailer',
+];
+
 const createOrganization: RequestHandler = catchAsync(
   async (req, res, next) => {
     const { name, code, email, address, city, state } =
@@ -28,5 +35,28 @@ const createOrganization: RequestHandler = catchAsync(
   }
 );
 
-// eslint-disable-next-line import/prefer-default-export
-export { createOrganization };
+const getRequestableOrganizations: RequestHandler = catchAsync(
+  async (req, res, next) => {
+    const userOrganizationType = (req.user?.organization as IOrganization).type;
+
+    const requestableOragnizationTypeIndex =
+      allOrganizations.findIndex((type) => type === userOrganizationType) - 1;
+
+    if (requestableOragnizationTypeIndex >= 0) {
+      const requestableOrganizations = await Organization.find({
+        type: allOrganizations[requestableOragnizationTypeIndex],
+      });
+      res.status(200).json({
+        status: 'success',
+        data: requestableOrganizations,
+      });
+    } else {
+      res.status(200).json({
+        status: 'success',
+        data: [],
+      });
+    }
+  }
+);
+
+export { createOrganization, getRequestableOrganizations };

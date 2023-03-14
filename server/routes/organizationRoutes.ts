@@ -16,6 +16,10 @@ router.use('/:orgId/transfers', transferRouter);
 router.use(authController.protect);
 
 router
+  .route('/requestable-orgs')
+  .get(organizationController.getRequestableOrganizations);
+
+router
   .route('/')
   .post(
     authController.restrictToRoles('admin'),

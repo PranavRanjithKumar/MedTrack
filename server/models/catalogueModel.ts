@@ -44,7 +44,7 @@ catalogueSchema.index(
 catalogueSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'drug',
-    select: 'name code description',
+    select: 'name type code description',
   }).populate({
     path: 'organization',
     select: 'name code type',
